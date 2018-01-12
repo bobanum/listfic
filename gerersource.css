@@ -1,0 +1,157 @@
+tr:hover {
+	background-color:rgba(0,0,0,.15);
+}
+td {
+	text-align:center;
+}
+td.nom {
+	text-align:left;
+}
+td>a {
+	display: block;
+	color:inherit;
+	text-decoration: none;
+}
+td>a:hover {
+	color:blue;
+	text-decoration: underline;
+}
+td>ul {
+	font-family:arial;
+	position:absolute;
+	display:none;
+	margin:0;
+	margin-top:1.2em;
+	padding:0;
+	background-color:#EEE;
+	border:1px solid black;
+	font-size:12px;
+	list-style-type:none;
+	box-shadow:.1em .1em .1em rgba(0,0,0,.5);
+}
+td>ul>li>* {
+	display:block;
+	color:inherit;
+	text-decoration:inherit;
+	padding:.25em .5em;
+}
+td>ul>li>span {
+	color:rgba(0,0,0,.5);
+}
+td>ul>li:hover>a {
+	background-color:rgba(0,0,0,.2);
+}
+td:hover>ul {
+	display:inherit;
+}
+td.present {
+}
+td.absent {
+	background-color:#CCC;
+}
+td.pareil {
+	background-color:lightgreen;
+}
+td.different {
+	background-color:pink;
+}
+td.reference {
+	background-color:orange;
+}
+div#ecran {
+	position:fixed;
+	background:rgba(52,52,52,.8);
+	top:0;
+	left:0;
+	bottom:0;
+	right:0;
+}
+div#ecran>div.zone {
+	position:fixed;
+	background:#FFF;
+	top:2em;
+	left:10em;
+	bottom:2em;
+	right:10em;
+	padding:2em;
+	border-radius:2em;
+	border:3px solid black;
+	box-shadow: .5em 1em 1em rgba(0,0,0,.5);
+}
+div#ecran>div.zone>div.contenu {
+	position:absolute;
+	top:2em;
+	left:2em;
+	bottom:2em;
+	right:2em;
+}
+div#ecran form {
+  bottom: 2em;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+div#ecran form>textarea {
+	width:100%;
+	height:100%;
+	-moz-box-sizing:border-box;
+}
+div#ecran div.boutons {
+	position:absolute;
+	bottom: -1.5em;
+	text-align: right;
+	width:100%;
+}
+span.readonly {
+	position:absolute;
+	font-size:1em;
+}
+span.readonly::before {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  border-radius: 0.3em;
+  content: "🔒";
+  cursor: pointer;
+  display: block;
+  height: 1.5em;
+  line-height: 1.8em;
+  margin: -0.7em;
+  text-align: center;
+  width: 1.5em;
+}
+textarea {
+	border-width:1px;
+}
+textarea[readonly] {
+	background-color:#EEE;
+}
+div.bulle {
+	position: absolute;
+	top:1em;
+	right:1em;
+	animation-name: fade;
+	animation-delay: 1s;
+	animation-duration: 1.5s;
+	animation-fill-mode:both;
+	animation-timing-function:ease-in-out;
+	background-color:green;
+	font-size: 1.2em;
+	padding:1em;
+	border-radius:1em;
+	border:2px solid white;
+	box-shadow: .25em .25em 1em rgba(0,0,0,.5);
+	font-weight:bold;
+	color:white;
+}
+div.bulle:hover {
+	animation-name:none;
+}
+@keyframes fade {
+	0% {
+		opacity:1;
+	}
+	100% {
+		opacity:0;
+	}
+}

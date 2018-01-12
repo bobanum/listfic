@@ -1,0 +1,69 @@
+/*span.admin {
+	float:right;
+}
+span.admin a {
+	color:inherit;
+}
+span.admin *.toggle.on, span.admin *.toggle.off {
+	margin-left:1px;
+	color:white;
+	text-decoration: none;
+	line-height: 1.2em;
+	height: 1.2em;
+	width: 1.2em;
+	display: inline-block;
+	text-align: center;
+	border-radius: 5px;
+	border:1px solid black;
+	font-weight: bold;
+	font-size: smaller;
+}
+span.admin *.toggle.on {
+	background-color:green;
+	color:white;
+}
+span.admin *.toggle.off {
+	border-color:rgba(0,0,0,.5);
+	background-color:transparent;
+	color:rgba(0,0,0,.5);
+}
+span.admin *.visibilite.toggle.off ~ * {
+		opacity: .2;
+}
+*/
+span.admin {
+	position: absolute;
+	right: -16px;
+	float:right;
+	background:url(menu.png) no-repeat right top;
+	min-width: 16px;
+	min-height: 16px;
+	padding-top:16px;
+}
+span.admin:hover {
+	zwidth:16em;
+	z-index: 1000;
+	background:url(menuactif.png) no-repeat right top;
+}
+span.admin a {
+	display:none;
+	background-color:#DDD;
+	background-image:-moz-linear-gradient(top, rgba(255,255,255,.8), rgba(255,255,255,0) 50%, rgba(0,0,0,0) 50%, rgba(0,0,0,.3));
+	padding:.1em .5em;
+	border-radius:1em;
+	white-space: nowrap;
+	text-shadow: 0 1px white;
+	box-shadow: 1px 1px 2px black;
+	margin: 2px 0;
+	-moz-transition: .2s;
+}
+span.admin:hover a {
+	display: block;
+}
+span.admin a:hover {
+	background-color:#EEE;
+	-moz-transform: scale(1.1);;
+}
+span.boutons-liens > a.boutonjel.off {
+	background-color:#FFF;
+}
