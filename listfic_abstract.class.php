@@ -118,6 +118,14 @@ abstract class Listfic_abstract {
 		if (isset($autres)) $nouveau['Autres'] = $autres;
 		return $nouveau;
 	}
+	public function categories() {
+		$resultat = array_map(function ($dossier) {
+			return $dossier->categorie;
+		}, $this->dossiers);
+
+		var_dump($resultat);
+		return true;
+	}
 	/**
 	 * Retourne l'affichage de l'arborescence courante.
 	 * @return string
@@ -125,8 +133,10 @@ abstract class Listfic_abstract {
 	public function affichageArbo() {
 		$resultat = '';
 		foreach($this->arbo as $cle=>&$val) {
+				$resultat .= '<article>';
 				$resultat .= '<h2>'.$cle.'</h2>';
 				$resultat .= static::creerAffichageArbo($val, static::estAdmin());
+				$resultat .= '</article>';
 		}
 		return $resultat;
 	}
@@ -294,6 +304,23 @@ abstract class Listfic_abstract {
 		file_put_contents($path, $ini);
 		return $objDossier->ligneProjet(true);
 	}
+	static public function urlScript($fichier=null) {
+		$script = explode("\\", __FILE__);
+		$page = explode("\\", $_SERVER['SCRIPT_FILENAME']);
+		array_pop($script);
+		array_pop($page);
+		while (count($script)>0 && count($page)>0 && $script[0] === $page[0]) {
+			array_shift($script);
+			array_shift($page);
+		}
+		$page = array_fill(0, count($page), "..");
+		$url = array_merge($page, $script);
+		if ($fichier) {
+			array_push($url, $fichier);
+		}
+		$url = implode("/", $url);
+		return $url;
+	}
 	static public function bloquer(){
 		if (!static::estAdmin()) {
 			if (!isset($_GET['l'])){
@@ -328,51 +355,7 @@ echo $_GET['a'];		if (isset($_GET['a'])) $resultat .= $this->admin_affichageForm
 	public function head() {
 		$resultat = '';
 		if (static::$modeAjax) {
-			$resultat .= <<<FIN
-<script type='text/javascript'>
-	$(function() {
-		$('span.admin a').click(evt.clicAdmin);
-	})
-	evt = {
-		clicAdmin:function(e) {
-			var dom = $(this).closest('li');
-			e.preventDefault();
-			var href = $(this).attr('href');
-			if (href.substr(0,5)=="admin") {location = href; return;}
-			var data = href.split('?');
-			var adresse = data.shift();
-			var data = data.join('');
-			$.get(adresse, data, function(resultat, etat, ajax) {
-				var nouveau = $(ajax.responseText);
-				$('span.admin a', nouveau).click(evt.clicAdmin);
-				if (nouveau.is('li')) dom.replaceWith(nouveau);
-				else if (nouveau.is('#form')) {
-					$(document.body).append(nouveau);
-					$("#form > form").submit(function(e){
-						e.preventDefault();
-						var input=e.originalEvent.explicitOriginalTarget;
-						if (!$(input).is("[name=annuler]")) {
-							var obj = {};
-							for (var i=0, size=this.elements.length; i<size; i++ ) {
-								var element = this.elements[i];
-								obj[element.name] = element.value;
-							}
-							delete(obj.annuler);
-							$.post(this.action, obj, function(resultat, etat, ajax) {
-								var nouveau = $(ajax.responseText);
-								$('span.admin a', nouveau).click(evt.clicAdmin);
-								if (nouveau.is('li')) dom.replaceWith(nouveau);
-							});
-						};
-						$(this).parent().remove();
-						return false;
-					});
-				}
-			});
-		},
-	}
-</script>
-FIN;
+			$resultat .= '<script src="'.self::urlScript("listfic.js").'"></script>';
 		}
 		return $resultat;
 	}
@@ -383,5 +366,3 @@ FIN;
 		}
 	}
 }
-
-?>
