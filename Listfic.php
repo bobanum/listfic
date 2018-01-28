@@ -5,11 +5,10 @@
 // TODO : Exemples = source automatique
 // TODO : Exercices et travaux = source jamais (A moins d'une mention dans le ini)
 // TODO : Un proxy qui donne les fichiers au besoin (et qui peut les zipper...)
-include_once "dossier.class.php";
-include_once "fonctionnalite.class.php";
 //error_reporting(E_ALL);
 //$liste = new Listfic();
 //echo $liste->affichageArbo();
+namespace Listfic;
 class Listfic {
 	public $domaine = "";
 	public $dossiers = array();
@@ -131,6 +130,7 @@ class Listfic {
 	 */
 	public function affichageArbo() {
 		$resultat = '';
+		var_dump($this->arbo);
 		foreach($this->arbo as $cle=>&$val) {
 				$resultat .= '<article>';
 				$resultat .= '<h2>'.$cle.'</h2>';
@@ -371,6 +371,10 @@ echo $_GET['a'];		if (isset($_GET['a'])) $resultat .= $this->admin_affichageForm
 	 */
 	static public function creerAffichageArbo($arbo, $admin=false) {
 		$resultat = '<ul class="categorie">';
+		if (gettype($arbo) == "string") {
+			var_dump(($arbo));
+
+		}
 		foreach($arbo as $cle=>&$val) {
 			if (is_a($val, "Dossier")) {	// C'est un dossier
 				$resultat .= $val->ligneProjet($admin);

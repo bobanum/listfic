@@ -4,7 +4,7 @@
 //echo $_SERVER['PHP_SELF']."<br>";
 //print_r(debug_backtrace());
 error_reporting(E_ALL);
-include 'Dossier.class.php';
+include 'Dossier.php';
 if (isset($_GET['data'])) {
 	$data = Dossier::decoder($_GET['data']);
 	$path = realpath(realpath('.')."/../".$data['d']);

@@ -1,4 +1,7 @@
 <?php
+namespace Listfic;
+use Listfic\Fonctionnalite\Fichiers;
+use Listfic\Fonctionnalite\Solution;
 class Dossier {
 	/** @var string - Le nom du petit fichier à laisser dans le dossier */
 	static public $nomIni = "_ini.php";
@@ -9,8 +12,9 @@ class Dossier {
 			"solution"=>"Solution",
 			"consignes"=>"Consignes",
 	);
+	//TODO Réviser :
 	static public $fonctionnalites = array(
-		'fct_ini','fct_titre','fct_categorie','fct_prefixe','fct_liens','fct_source','fct_visible',
+		'Ini','Titre','Categorie','Prefixe','Liens','Source','Visible',
 	);
 	/** @var string Ce qui se trouve juste avant le url pour faire un path absolu. Déterminé au init. */
 	static public $racine;
@@ -139,8 +143,8 @@ class Dossier {
 		}
 		$resultat = array();
 		foreach (static::$fonctionnalites as $fct) {
+			$fct = "Listfic\\Fonctionnalite\\$fct";
 			if (method_exists($fct, $methode)) {
-//				var_dump($fct);
 				$reponse = call_user_func_array(array($fct, $methode), $params);
 				if ($reponse) $resultat[$fct] = $reponse;
 			}
@@ -159,6 +163,7 @@ class Dossier {
 		}
 		$resultat = array();
 		foreach (static::$fonctionnalites as $fct) {
+			$fct = "Listfic\\Fonctionnalite\\$fct";
 			if (method_exists($fct, $methode)) {
 				$reponse = call_user_func_array(array($fct, $methode), $params);
 				if ($reponse) $resultat[$fct] = $reponse;
@@ -418,13 +423,13 @@ class Dossier {
 			$liens[] = $lien;
 		}
 		// Lien FICHIERS
-		$etiquette = Fct_fichiers::$etiquette;
-		if (!isset($this->liens[$etiquette]) && ($lien = Fct_fichiers::html_lien($this))!="") {
+		$etiquette = Fichiers::$etiquette;
+		if (!isset($this->liens[$etiquette]) && ($lien = Fichiers::html_lien($this))!="") {
 			$liens[] = $lien;
 		}
 		// Lien Solution
-		$etiquette = Fct_solution::$etiquette;
-		if (!isset($this->liens[$etiquette]) && ($lien = Fct_solution::html_lien($this))!="") {
+		$etiquette = Solution::$etiquette;
+		if (!isset($this->liens[$etiquette]) && ($lien = Solution::html_lien($this))!="") {
 			$liens[] = $lien;
 		}
 		// Autres liens
@@ -523,8 +528,8 @@ class Dossier {
 	//protected $_description = "";
 	static public function init() {
 		// Pas besoin d'appeler le parent puisque le init du parent est déjà appelé
-		self::$fonctionnalites[] = 'fct_fichiers';
-		self::$fonctionnalites[] = 'fct_solution';
+		self::$fonctionnalites[] = 'Fichiers';
+		self::$fonctionnalites[] = 'Solution';
 		self::$racine = realpath('.');
 	}
 	// ACCESSEURS ////////////////////////////////////////////////////////////////
