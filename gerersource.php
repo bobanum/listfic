@@ -194,14 +194,18 @@ class Gerer {
 		foreach($fics as $fic) {
 			$affichage .= '<tr>';
 			$affichage .= '<td><a href="?dossier='.basename($fic).'">'.basename($fic).'</a></td>';
-			if (file_exists($fic.'/'.basename($fic)))
+			if (file_exists($fic.'/'.basename($fic))) {
 				$affichage .= '<td>X</td>';
-			else
+			}
+			else {
 				$affichage .= '<td>-</td>';
-			if (file_exists($fic.'/'.basename($fic)."_solution"))
+			}
+			if (file_exists($fic.'/'.basename($fic)."_solution")) {
 				$affichage .= '<td>X</td>';
-			else
+			}
+			else {
 				$affichage .= '<td>-</td>';
+			}
 			$affichage .= '</tr>';
 		}
 		$affichage .= '</tbody>';
@@ -233,8 +237,12 @@ class Gerer {
 				$suffixe = $_GET['suffixe'];
 				$path0 = "$dossier/$fichier";
 				$path = "$dossier/$dossier$suffixe/$fichier";
-				if (!file_exists($path0)) exit("false".__LINE__);
-				if (file_exists($path)) self::unlink($path);
+				if (!file_exists($path0)) {
+					exit("false".__LINE__);
+				}
+				if (file_exists($path)) {
+					self::unlink($path);
+				}
 				self::copy($path0, $path);
 				$dataUrl = "dossier=$dossier&fichier=$fichier&suffixe=$suffixe";
 				$retour = self::td($dataUrl, 'pareil');
@@ -250,7 +258,9 @@ class Gerer {
 				$suffixe = $_GET['suffixe'];
 				$path0 = "$dossier/$fichier";
 				$path = "$dossier/$dossier$suffixe/$fichier";
-				if (file_exists($path)) self::unlink($path);
+				if (file_exists($path)) {
+					self::unlink($path);
+				}
 				file_put_contents($path, '');
 				$dataUrl = "dossier=$dossier&fichier=$fichier&suffixe=$suffixe";
 				$retour = self::td($dataUrl, 'reference');
@@ -265,7 +275,9 @@ class Gerer {
 				$fichier = $_GET['fichier'];
 				$suffixe = $_GET['suffixe'];
 				$path = "$dossier/$dossier$suffixe/$fichier";
-				if (file_exists($path)) self::unlink($path);
+				if (file_exists($path)) {
+					self::unlink($path);
+				}
 				$dataUrl = "dossier=$dossier&fichier=$fichier&suffixe=$suffixe";
 				$retour = self::td($dataUrl, 'absent');
 				echo $retour;
@@ -280,7 +292,9 @@ class Gerer {
 				}
 				$suffixe = $_GET['suffixe'];
 				echo $path = "$dossier/$dossier$suffixe";
-				if (!file_exists($path)) mkdir($path);
+				if (!file_exists($path)) {
+					mkdir($path);
+				}
 				self::aller("?dossier=$dossier");
 			}
 		}
@@ -289,7 +303,9 @@ class Gerer {
 			$dossier = $_POST['dossier'];
 			$fichier = $_POST['fichier'];
 			$suffixe = null;
-			if (isset($_POST['suffixe'])) $suffixe = $_POST['suffixe'];
+			if (isset($_POST['suffixe'])) {
+				$suffixe = $_POST['suffixe'];
+			}
 			$fic = self::pathfic($dossier, $fichier, $suffixe);
 			if ($action=="sauvegarder") {
 				rename($fic, "$fic.bak");

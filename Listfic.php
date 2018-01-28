@@ -57,7 +57,9 @@ class Listfic {
 	public function prendreDossiers() {
 		$fics = (glob($this->domaine."/*", GLOB_ONLYDIR));
 		foreach ($fics as $dossier) {
-			if ($this->estActif($dossier)) $this->dossiers[$dossier] = new Dossier($dossier);
+			if ($this->estActif($dossier)) {
+				$this->dossiers[$dossier] = new Dossier($dossier);
+			}
 		}
 		return $this;
 	}
@@ -130,7 +132,6 @@ class Listfic {
 	 */
 	public function affichageArbo() {
 		$resultat = '';
-		var_dump($this->arbo);
 		foreach($this->arbo as $cle=>&$val) {
 				$resultat .= '<article>';
 				$resultat .= '<h2>'.$cle.'</h2>';
@@ -171,7 +172,7 @@ class Listfic {
 #	static public function creerAffichageArbo($arbo, $admin=false) {
 #		$resultat = '<ul class="projets">';
 #		foreach($arbo as $cle=>&$val) {
-#			if (is_a($val, "Dossier")) {	// C'est un dossier
+#			if (is_a($val, '\Listfic\Dossier')) {	// C'est un dossier
 #				$resultat .= '<li id="projet-'.$val->url.'" class="projet">'.$val->ligneProjet($admin).'</li>';
 #			}else{
 #				$resultat .= '<li><span>'.$cle.'</span>';
@@ -376,7 +377,7 @@ echo $_GET['a'];		if (isset($_GET['a'])) $resultat .= $this->admin_affichageForm
 
 		}
 		foreach($arbo as $cle=>&$val) {
-			if (is_a($val, "Dossier")) {	// C'est un dossier
+			if (is_a($val, '\Listfic\Dossier')) {	// C'est un dossier
 				$resultat .= $val->ligneProjet($admin);
 			}else{
 				$resultat .= '<li class="categorie"><span>'.$cle.'</span>';

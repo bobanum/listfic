@@ -61,9 +61,13 @@ class Dossier {
 	 * @throws Exception
 	 */
 	public function __set($name, $value) {
-		if (method_exists($this, $name)) return $this->$name($value);
+		if (method_exists($this, $name)) {
+			return $this->$name($value);
+		}
 		$name = '_'.$name;
-		if (!property_exists($this, $name)) throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+		if (!property_exists($this, $name)) {
+			throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+		}
 		if ($this->$name != $value) {
 			$this->$name = $value;
 			$this->modifie = true;
@@ -77,20 +81,28 @@ class Dossier {
 	 * @throws Exception
 	 */
 	public function __get($name) {
-		if (method_exists($this, $name)) return $this->$name();
+		if (method_exists($this, $name)) {
+			return $this->$name();
+		}
 		$name = '_'.$name;
-		if (!property_exists($this, $name)) throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+		if (!property_exists($this, $name)) {
+			throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+		}
 		return $this->$name;
 	}
 	/**
 	 * Un hack pour accéder à une propriété avec une fonction pour faire du chaining
 	 * @param type $name
-	 * @return \Dossier
+	 * @return Dossier
 	 * @throws Exception
 	 */
 	public function prop($name) {
-		if (!property_exists($this, $name)) throw new Exception('Propriété "'.substr($name,1).'" inconnue');
-		if (func_num_args()==1) return $this->$name;
+		if (!property_exists($this, $name)) {
+			throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+		}
+		if (func_num_args()==1) {
+			return $this->$name;
+		}
 		$this->$name = func_get_arg(1);
 		return $this;
 	}
@@ -100,7 +112,9 @@ class Dossier {
 	 * @return \Dossier
 	 */
 	public function fichiers() {
-		if (func_num_args()==0) return $this->_fichiers;
+		if (func_num_args()==0) {
+			return $this->_fichiers;
+		}
 		$fichiers = func_get_arg(0);
 		if ($fichiers==true) {
 			$this->ajusterSousDossier();
@@ -220,7 +234,9 @@ class Dossier {
 			else return true;
 		}
 		// Il n'y a que le zip
-		if (file_exists($pathZip)) return true;
+		if (file_exists($pathZip)) {
+			return true;
+		}
 		// Il n'y a que le dossier... on zippe;
 		if (file_exists($pathFic)){
 			$this->zipper($pathFic);
@@ -238,17 +254,25 @@ class Dossier {
 		$pathSousDossier = $path."/".basename($path).$suffixe;
 		$pathZip = $pathSousDossier.".zip";
 		// Il n'y a que le zip, on ne crée pas de dossier
-		if (file_exists($pathZip)) return true;
+		if (file_exists($pathZip)) {
+			return true;
+		}
 		// Il n'y a que le dossier... on zippe;
-		if (file_exists($pathSousDossier)) return true;
+		if (file_exists($pathSousDossier)) {
+			return true;
+		}
 		else $this->sousDossier($suffixe);
 		return false;
 	}
 	public function pathFichiers($flags=0) {
 		$path = ($flags & static::PATH_RELATIF) ? $this->url : $this->path;
 		$path .= "/".basename($path);
-		if ($flags & static::PATH_SOLUTION) $path .= "_solution";
-		if ($flags & static::PATH_ZIP) $path .= ".zip";
+		if ($flags & static::PATH_SOLUTION) {
+			$path .= "_solution";
+		}
+		if ($flags & static::PATH_ZIP) {
+			$path .= ".zip";
+		}
 		return $path;
 	}
 	/**
@@ -276,8 +300,12 @@ class Dossier {
 	 * @param type $element
 	 */
 	public function zipper_ajouter($zip, $path, $element) {
-		if ($this->zipper_nomValide($path)==false) return false;
-		if (!file_exists($path)) return false;
+		if ($this->zipper_nomValide($path)==false) {
+			return false;
+		}
+		if (!file_exists($path)) {
+			return false;
+		}
 		if (is_dir($path)) {
 			$fics = glob($path."/*");
 			foreach($fics as $fic) {
@@ -379,7 +407,9 @@ class Dossier {
 	}
 	public function affichageEcran() {
 		$nom = basename($this->url).".png";
-		if (!file_exists($this->path."/".$nom)) return "";
+		if (!file_exists($this->path."/".$nom)) {
+			return "";
+		}
 		return '<div class="ecran"><img src="'.$this->url.'/'.$nom.'" alt="'.$this->titre.'" /></div>';
 	}
 	public function affichageFormModifier() {

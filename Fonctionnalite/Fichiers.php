@@ -1,5 +1,6 @@
 <?php
 namespace Listfic\Fonctionnalite;
+use Listfic\Dossier;
 class Fichiers extends Fonctionnalite {
 	static public $nom = "Fichiers";
 	static public $nomChamp = "fichiers";
@@ -41,19 +42,29 @@ class Fichiers extends Fonctionnalite {
 
 		$etiquette = static::$etiquette;
 		$condition = $objDossier->fichiers;
-		if (!file_exists($path)) return "";
-		if ($condition===false) return "";
+		if (!file_exists($path)) {
+			return "";
+		}
+		if ($condition===false) {
+			return "";
+		}
 		$lien = Dossier::lienTelecharger($etiquette, array("fichiers", $objDossier->url), 'fichiers');
-		if ($condition===true) return $lien;
+		if ($condition===true) {
+			return $lien;
+		}
 		if (($time=strtotime($condition))!==false) {
 			//TODO Réviser l'affichage par date...
-			if ($time<time()) return $lien;
+			if ($time<time()) {
+				return $lien;
+			}
 			else return "";
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
 		$path = $objDossier->path.'/'.$condition;
 		$url = $objDossier->url.'/'.$condition;
-		if (file_exists($path)) return '<a href="'.$url.'">'.$etiquette.'</a>';
+		if (file_exists($path)) {
+			return '<a href="'.$url.'">'.$etiquette.'</a>';
+		}
 		return "";
 	}
 	static public function html_form($objDossier) {

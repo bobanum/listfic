@@ -8,7 +8,9 @@ class Solution extends Fonctionnalite {
 	static public $description = 'Booléen. Y a-t-il des fichiers de solution?';
 	public function admin_gerer() {
 		//Rendre la solution visible
-		if (!isset($_GET['s'])) return false;
+		if (!isset($_GET['s'])) {
+			return false;
+		}
 		$resultat = '';
 		foreach($_GET['s'] as $dossier=>$etat) {
 			$objDossier = new Dossier($dossier);
@@ -41,19 +43,29 @@ class Solution extends Fonctionnalite {
 
 		$etiquette = static::$etiquette;
 		$condition = $objDossier->solution;
-		if (!file_exists($path)) return "";
-		if ($condition===false) return "";
+		if (!file_exists($path)) {
+			return "";
+		}
+		if ($condition===false) {
+			return "";
+		}
 		$lien = Dossier::lienTelecharger($etiquette, array("solution", $objDossier->url), 'solution');
-		if ($condition===true) return $lien;
+		if ($condition===true) {
+			return $lien;
+		}
 		if (($time=strtotime($condition))!==false) {
 			//TODO Réviser l'affichage par date...
-			if ($time<time()) return $lien;
+			if ($time<time()) {
+				return $lien;
+			}
 			else return "";
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
 		$path = $objDossier->path.'/'.$condition;
 		$url = $objDossier->url.'/'.$condition;
-		if (file_exists($path)) return '<a href="'.$url.'">'.$etiquette.'</a>';
+		if (file_exists($path)) {
+			return '<a href="'.$url.'">'.$etiquette.'</a>';
+		}
 		return "";
 	}
 	static public function prendreIni($objDossier, $ini){
