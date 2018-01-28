@@ -23,7 +23,7 @@ class Fichiers extends Fonctionnalite {
 		$data = 'f['.urlencode($objDossier->url).']';
 		if ($objDossier->fichiers) {
 			$resultat = '<a class="fichiers toggle on" href="?admin&'.$data.'=false">F</a>';
-		} else if (file_exists($objDossier->pathFichiers())) {
+		} else if (file_exists($objDossier->pathFic())) {
 			$resultat = '<a class="fichiers toggle off" href="?admin&'.$data.'=true">F</a>';
 		} else {
 			$resultat = '<a class="fichiers toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';

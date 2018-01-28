@@ -24,7 +24,7 @@ class Solution extends Fonctionnalite {
 		$data = 's['.urlencode($objDossier->url).']';
 		if ($objDossier->solution) {
 			$resultat = '<a class="solution toggle on" href="?admin&'.$data.'=false">S</a>';
-		} else if (file_exists($objDossier->pathFichiers(Dossier::PATH_SOLUTION))) {
+		} else if (file_exists($objDossier->pathFic(Dossier::$suffixe_solution))) {
 			$resultat = '<a class="solution toggle off" href="?admin&'.$data.'=true">S</a>';
 		} else {
 			$resultat = '<a class="solution toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
@@ -39,7 +39,7 @@ class Solution extends Fonctionnalite {
 	 */
 	static public function html_lien($objDossier) {
 		$path = $objDossier->path;
-		$path .= "/".basename($path)."_solution";
+		$path .= "/".basename($path).Dossier::$suffixe_solution;
 
 		$etiquette = static::$etiquette;
 		$condition = $objDossier->solution;

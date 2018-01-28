@@ -122,8 +122,6 @@ class Listfic {
 		$resultat = array_map(function ($dossier) {
 			return $dossier->categorie;
 		}, $this->dossiers);
-
-		var_dump($resultat);
 		return true;
 	}
 	/**
@@ -212,18 +210,24 @@ class Listfic {
 		}
 		switch ($type) {
 			case 'fichiers': case 'f':
-				$path = $dossier->pathFichiers(Dossier::PATH_ZIP);
-				if ($dossier->fichiers && file_exists($path)) return file_get_contents($path);
+				$path = $dossier->pathZip();
+				if ($dossier->fichiers && file_exists($path)) {
+					return file_get_contents($path);
+				}
 			break;
 			case 'solution': case 's':
-				$path = $dossier->pathFichiers(Dossier::PATH_ZIP|Dossier::PATH_SOLUTION);
-				if ($dossier->solution && file_exists($path)) return file_get_contents($path);
+				$path = $dossier->pathZip(Dossier::$suffixe_solution);
+				if ($dossier->solution && file_exists($path)) {
+					return file_get_contents($path);
+				}
 			break;
 			case 'url': case 'u':
 				$nomFic=$data[2];
 				$nomFic = str_replace(array('$0','$1'), array($data[0],$data[1]), $nomFic);
 				$path = $dossier->path.'/'.$nomFic;
-				if (file_exists($path)) return file_get_contents($path);
+				if (file_exists($path)) {
+					return file_get_contents($path);
+				}
 			break;
 		}
 		return '';
@@ -372,10 +376,6 @@ echo $_GET['a'];		if (isset($_GET['a'])) $resultat .= $this->admin_affichageForm
 	 */
 	static public function creerAffichageArbo($arbo, $admin=false) {
 		$resultat = '<ul class="categorie">';
-		if (gettype($arbo) == "string") {
-			var_dump(($arbo));
-
-		}
 		foreach($arbo as $cle=>&$val) {
 			if (is_a($val, '\Listfic\Dossier')) {	// C'est un dossier
 				$resultat .= $val->ligneProjet($admin);

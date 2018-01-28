@@ -4,13 +4,13 @@
 //echo $_SERVER['PHP_SELF']."<br>";
 //print_r(debug_backtrace());
 error_reporting(E_ALL);
-include 'Dossier.php';
+include_once 'autoload.php';
 if (isset($_GET['data'])) {
 	$data = Dossier::decoder($_GET['data']);
 	$path = realpath(realpath('.')."/../".$data['d']);
 	$dossier = new Dossier($path);
 	if ($dossier->solution) {
-		$path = $dossier->pathFichiers(Dossier::PATH_SOLUTION)."/".$data['p'];
+		$path = $dossier->pathFic(Dossier::$suffixe_solution)."/".$data['p'];
 		$code = highlight_file($path, true);
 		$code = substr($code, 36, -10).'<br />';
 		$code = str_replace('<br /></span>','</span><br />',$code);

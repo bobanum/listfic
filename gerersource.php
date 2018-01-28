@@ -1,11 +1,12 @@
 <?php
+use Listfic\Dossier
 class Gerer {
 	const COPIER = 'Copier l\'original';
 	const REFERENCE = 'Créer une référence';
 	const SUPPRIMER = 'Supprimer';
 	const MODIFIER = 'Modifier';
 	const SUPPRIMERTOUT = 'Supprimer partout';
-	static public $suffixes = array("Fichiers"=>"", "Solution"=>"_solution");
+	static public $suffixes = array("Fichiers"=>"", "Solution"=>Dossier::$suffixe_solution);
 	static public function etatFic($fic, $suffixe="") {
 		$path = dirname($fic);
 		$dossier = basename($path);
@@ -49,7 +50,8 @@ class Gerer {
 		return $resultat;
 	}
 	static public function ficsDossier($dossier, $suffixes) {
-		$fics = array_merge(glob("$dossier/*"), glob("$dossier/$dossier/*"), glob("$dossier/{$dossier}_solution/*"));
+		$suffixe_solution = Dossier::$suffixe_solution;
+		$fics = array_merge(glob("$dossier/*"), glob("$dossier/$dossier/*"), glob("$dossier/{$dossier}{$suffixe_solution}/*"));
 		$fics = array_diff($fics, glob("$dossier/$dossier"));
 		foreach($suffixes as $s) {
 			$fics = array_diff($fics, glob("$dossier/{$dossier}{$s}"));
@@ -200,7 +202,7 @@ class Gerer {
 			else {
 				$affichage .= '<td>-</td>';
 			}
-			if (file_exists($fic.'/'.basename($fic)."_solution")) {
+			if (file_exists($fic.'/'.basename($fic).Dossier::$suffixe_solution)) {
 				$affichage .= '<td>X</td>';
 			}
 			else {

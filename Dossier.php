@@ -1,7 +1,9 @@
 <?php
+/*TODO Enlever la notion de flag*/
 namespace Listfic;
 use Listfic\Fonctionnalite\Fichiers;
 use Listfic\Fonctionnalite\Solution;
+use ZipArchive;
 class Dossier {
 	/** @var string - Le nom du petit fichier à laisser dans le dossier */
 	static public $nomIni = "_ini.php";
@@ -19,7 +21,9 @@ class Dossier {
 	/** @var string Ce qui se trouve juste avant le url pour faire un path absolu. Déterminé au init. */
 	static public $racine;
 	/** @var string Le dossier dans lequel mettre les fichiers zip. */
-	static public $pathZip = "_zip";
+	static public $pathZip = "/_zip";
+	/** @var string Le dossier dans lequel mettre les fichiers zip. */
+	static public $suffixe_solution = "_solution";
 	const PATH_ZIP = 1;
 	const PATH_RELATIF = 2;
 	const PATH_SOLUTION = 4;
@@ -130,7 +134,7 @@ class Dossier {
 		if (func_num_args()==0) return $this->_solution;
 		$solution = func_get_arg(0);
 		if ($solution==true) {
-			$this->ajusterSousDossier(static::PATH_SOLUTION);
+			$this->ajusterSousDossier(self::PATH_SOLUTION);
 		}
 		$this->_solution = $solution;
 		return $this;
@@ -141,7 +145,7 @@ class Dossier {
 	 * @throws Exception
 	 */
 	public function pathFicIni() {
-			if (func_num_args()== 0) return $this->path."/".static::$nomIni;
+			if (func_num_args()== 0) return $this->path."/".self::$nomIni;
 			else throw new Exception("Propriété 'pathFicIni' en lecture seule");
 	}
 	// METHODES //////////////////////////////////////////////////////////////////
@@ -156,7 +160,7 @@ class Dossier {
 			array_push($params, func_get_arg($i));
 		}
 		$resultat = array();
-		foreach (static::$fonctionnalites as $fct) {
+		foreach (self::$fonctionnalites as $fct) {
 			$fct = "Listfic\\Fonctionnalite\\$fct";
 			if (method_exists($fct, $methode)) {
 				$reponse = call_user_func_array(array($fct, $methode), $params);
@@ -176,7 +180,7 @@ class Dossier {
 			array_push($params, func_get_arg($i));
 		}
 		$resultat = array();
-		foreach (static::$fonctionnalites as $fct) {
+		foreach (self::$fonctionnalites as $fct) {
 			$fct = "Listfic\\Fonctionnalite\\$fct";
 			if (method_exists($fct, $methode)) {
 				$reponse = call_user_func_array(array($fct, $methode), $params);
@@ -222,14 +226,43 @@ class Dossier {
 		return $this;
 	}
 	/**
+	 * Retourne le chemin absolu du sous-dossier de fichier ou de solution (ou autre);
+	 * @param  string [$suffixe=""] Le suffixe vers le dossier
+	 * @return string Un chemin absolu vers le sous-dossier
+	 */
+	public function pathFic($suffixe="") {
+		$resultat = $this->path."/".basename($this->path).$suffixe;
+		return $resultat;
+	}
+	/**
+	 * Retourne le chemin du fichier zip en fonction de la variable statique $pathZip;
+	 * @param  string [$suffixe=""] Le suffixe vers le dossier zippé/àzipper
+	 * @return string Un chemin absolu vers le fichier zip
+	 */
+	public function pathZip($suffixe="") {
+		$resultat = basename($this->path).$suffixe.".zip";
+		if (empty(self::$pathZip)) {
+			$dossier = $this->path;
+		} else if (substr(self::$pathZip, 0, 2) === "./") {
+			$dossier = $this->path."/".substr(self::$pathZip, 2);
+		} else if (substr(self::$pathZip, 0, 3) === "../") {
+			$dossier = dirname($this->path).substr(self::$pathZip, 3);
+		} else if (substr(self::$pathZip, 0, 1) === "/") {
+			$dossier = self::$racine."/".substr(self::$pathZip, 1);
+		} else {
+			$dossier = self::$racine."/".self::$pathZip;
+		}
+		$resultat = $dossier."/".$resultat;
+		return $resultat;
+	}
+	/**
 	 * S'assure qu'il y a un fichier zip au besoin (et le crée) et retourne true si c'est le cas
 	 * @return boolean
 	 */
 	public function ajusterZip($flags=0) {
-		$suffixe = ($flags & static::PATH_SOLUTION) ? "_solution" : "";
-		$path = $this->path;
-		$pathFic = $path."/".basename($path).$suffixe;
-		$pathZip = $pathFic.".zip";
+		$suffixe = ($flags & self::PATH_SOLUTION) ? self::$suffixe_solution : "";
+		$pathFic = $this->pathFic($suffixe);
+		$pathZip = $this->pathZip($suffixe);
 		//s'il n'y a pas de ini_fichiers, on vérifie s'il y a un dossier du meme nom ou un zip
 		if (file_exists($pathZip) && file_exists($pathFic)) {
 			if (filemtime($pathZip)<filemtime($pathFic)) unlink($pathZip);	// Le zip est désuet
@@ -241,7 +274,7 @@ class Dossier {
 		}
 		// Il n'y a que le dossier... on zippe;
 		if (file_exists($pathFic)){
-			$this->zipper($pathFic);
+			$this->zipperSousDossier($suffixe);
 			return true;
 		}
 		return false;
@@ -251,31 +284,41 @@ class Dossier {
 	 * @return boolean
 	 */
 	public function ajusterSousDossier($flags=0) {
-		$suffixe = ($flags & static::PATH_SOLUTION) ? "_solution" : "";
-		$path = $this->path;
-		$pathSousDossier = $path."/".basename($path).$suffixe;
-		$pathZip = $pathSousDossier.".zip";
+		$suffixe = ($flags & self::PATH_SOLUTION) ? self::$suffixe_solution : "";
+		$pathFic = $this->pathFic($suffixe);
+		$pathZip = $this->pathZip($suffixe);
 		// Il n'y a que le zip, on ne crée pas de dossier
 		if (file_exists($pathZip)) {
 			return true;
 		}
 		// Il n'y a que le dossier... on zippe;
-		if (file_exists($pathSousDossier)) {
+		if (file_exists($pathFic)) {
 			return true;
+		} else {
+			$this->sousDossier($suffixe);
 		}
-		else $this->sousDossier($suffixe);
 		return false;
 	}
-	public function pathFichiers($flags=0) {
-		$path = ($flags & static::PATH_RELATIF) ? $this->url : $this->path;
-		$path .= "/".basename($path);
-		if ($flags & static::PATH_SOLUTION) {
-			$path .= "_solution";
+	/**
+	 * Zippe un sous-dossier en lui donnant le même nom
+	 * @param type $path Chemin absolu vers le dossier à zipper
+	 * @param boolean $supprimerOriginal
+	 */
+	public function zipperSousDossier($suffixe, $supprimerOriginal=false) {
+		$pathFic = $this->pathFic($suffixe);
+		$pathZip = $this->pathZip($suffixe);
+		$this->ajusterDossier(dirname($pathZip));
+		$path = realpath($pathFic);
+		$element = basename($pathFic);
+		$zip = new ZipArchive;
+		$res = $zip->open($pathZip, ZipArchive::CREATE);
+		if ($res === TRUE) {
+			//TODO Réviser l'obligation de séparer dossier et élément
+			$this->zipper_ajouter($zip, $path, $element);
 		}
-		if ($flags & static::PATH_ZIP) {
-			$path .= ".zip";
+		if ($supprimerOriginal === true) {
+			$this->supprimerFichier($pathFic);
 		}
-		return $path;
 	}
 	/**
 	 * Zippe un dossier en lui donnant le même nom
@@ -283,6 +326,7 @@ class Dossier {
 	 * @param boolean $supprimerOriginal
 	 */
 	public function zipper($path, $supprimerOriginal=false) {
+		/*OBSELETE Remplacé par zipperSousDossier*/
 		$path = realpath($path);
 		$dossier = dirname($path);
 		$element = basename($path);
@@ -329,7 +373,7 @@ class Dossier {
 	 */
 	public function zipper_nomValide($nom) {
 		$nom = basename($nom);
-		foreach(static::$exclusionsZip as $patt) {
+		foreach(self::$exclusionsZip as $patt) {
 			if (preg_match("#$patt#", $nom)) return false;
 		}
 		return true;
@@ -351,6 +395,17 @@ class Dossier {
 			}
 		}
 		$this->sousDossier_ajouter($path, $pathDossier, true);
+	}
+	public function ajusterDossier($pathDossier) {
+		if (file_exists($pathDossier)) {
+			return $pathDossier;
+		} else if (!$pathDossier) {
+			return "";
+		} else {
+			$this->ajusterDossier(dirname($pathDossier));
+			mkdir($pathDossier);
+			return $pathDossier;
+		}
 	}
 	/**
 	 * Ajoute un fichier ou un dossier à un sous-dossier
@@ -387,10 +442,16 @@ class Dossier {
 	public function sousDossier_nomValide($path) {
 		$nom = basename($path);
 		$valide = $this->zipper_nomValide($nom);
-		if (!$valide) return false;
+		if (!$valide) {
+			return false;
+		}
 		$dossier = preg_quote(basename($this->path, "#"));
-		if (is_dir($path) && preg_match("#^".$dossier.".*#", $nom)) return false;
-		if (preg_match("#^".$dossier.".*\.zip#", $nom)) return false;
+		if (is_dir($path) && preg_match("#^".$dossier.".*#", $nom)) {
+			return false;
+		}
+		if (preg_match("#^".$dossier.".*\.zip#", $nom)) {
+			return false;
+		}
 		return true;
 	}
 	/** Devrait être surchargée par l'application */
@@ -429,7 +490,7 @@ class Dossier {
 		return $form;
 	}
 	public function html_lienFichier($nom, $extensions=["htm","html","php"]) {
-		$etiquette = static::$etiquettes[$nom];
+		$etiquette = self::$etiquettes[$nom];
 		if (isset($this->liens[$etiquette])) {
 			return "";
 		}
@@ -480,16 +541,16 @@ class Dossier {
 	}
 	public function lienFichiers($flags=0) {
 		// Lien FICHIERS
-		$data[] = ($flags & static::PATH_SOLUTION) ? "solution" : "fichiers";
-		$etiquette = static::$etiquettes[$data[0]];
+		$data[] = ($flags & self::PATH_SOLUTION) ? "solution" : "fichiers";
+		$etiquette = self::$etiquettes[$data[0]];
 		//$etiquette = '<img src="'.dirname($this->url).'/_listfic/'.$data[0].'16.png" alt="'.$etiquette.'" />';
 		$data[] = $this->url;
-		return static::lienTelecharger($etiquette, $data, $data[0]);
+		return self::lienTelecharger($etiquette, $data, $data[0]);
 	}
 	static public function lienTelecharger($etiquette, $data, $class='') {
 		if ($class) $class = ' class="telecharger '.$class.'"';
 		else $class = ' class="telecharger"';
-		return '<a href="telecharger.php?'.static::encoder($data).'"'.$class.' title="'.$etiquette.'">'.$etiquette.'</a>';
+		return '<a href="telecharger.php?'.self::encoder($data).'"'.$class.' title="'.$etiquette.'">'.$etiquette.'</a>';
 	}
 	static public function encoder($data) {
 		$data = serialize($data);
@@ -549,7 +610,7 @@ class Dossier {
 		return $path;
 	}
 	public function relatifSite($path){
-		return static::relatif(static::$racine, $path);
+		return self::relatif(self::$racine, $path);
 	}
 	public function relatifDossier($path){
 		$path = $this->relatifSite($path);
@@ -582,14 +643,14 @@ class Dossier {
 		}
 		if ($this->fichiers) {
 			$resultat .= '<a class="fichiers toggle on" href="?admin'.$ajax.'&amp;f'.$commande.'=false">Retirer le dossier de départ</a>';
-		} else if (file_exists($this->pathFichiers())||file_exists($this->pathFichiers().".zip")) {
+		} else if (file_exists($this->pathFic())||file_exists($this->pathZip())) {
 			$resultat .= '<a class="fichiers toggle off" href="?admin'.$ajax.'&amp;f'.$commande.'=true">Publier le dossier de départ</a>';
 		} else {
 			$resultat .= '<a class="fichiers toggle off" href="?admin'.$ajax.'&amp;f'.$commande.'=true">Créer un dossier de départ</a>';
 		}
 		if ($this->solution) {
 			$resultat .= '<a class="solution toggle on" href="?admin'.$ajax.'&amp;s'.$commande.'=false">Retirer le dossier de solution</a>';
-		} else if (file_exists($this->pathFichiers(static::PATH_SOLUTION))||file_exists($this->pathFichiers(static::PATH_SOLUTION).".zip")) {
+		} else if (file_exists($this->pathFic(self::$suffixe_solution))||file_exists($this->pathZip(self::$suffixe_solution))) {
 			$resultat .= '<a class="solution toggle off" href="?admin'.$ajax.'&amp;s'.$commande.'=true">Publier le dossier de solution</a>';
 		} else {
 			$resultat .= '<a class="solution toggle off" href="?admin'.$ajax.'&amp;s'.$commande.'=true">Créer un dossier de solution</a>';
