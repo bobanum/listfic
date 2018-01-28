@@ -35,7 +35,7 @@ class Fonctionnalite {
 		$resultat .= " => ".var_export($objDossier->$nomChamp, true).",\r\n";
 		return $resultat;
 	}
-	public function admin_gerer() {
+	static public function admin_gerer() {
 		return "";
 	}
 	static public function html_form($objDossier) {

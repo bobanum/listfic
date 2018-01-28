@@ -12,7 +12,7 @@ class Ini extends Fonctionnalite {
 		$resultat = '<a style="font-size: 150%; line-height: 0; position: relative; text-decoration: none; top: 0.21em;" href="?admin&a='.urlencode($objDossier->url).'">&#x270D;</a>';
 		return $resultat;
 	}
-	public function admin_gerer() {
+	static public function admin_gerer() {
 		if (!isset($_GET['a'])) return "";
 		$dossier = array_keys($_GET['a']);
 		$objDossier = new Dossier($dossier[0]);

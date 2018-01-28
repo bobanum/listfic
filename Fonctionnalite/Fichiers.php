@@ -7,7 +7,7 @@ class Fichiers extends Fonctionnalite {
 	static public $etiquette = "Fichiers";
 	static public $description = 'Booléen. Y a-t-il des fichiers à télécharger?';
 
-	public function admin_gerer() {
+	static public function admin_gerer() {
 		//Rendre les fichiers de départ visibles
 		if (!isset($_GET['f'])) return false;
 		$resultat = '';

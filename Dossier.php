@@ -180,7 +180,9 @@ class Dossier {
 			$fct = "Listfic\\Fonctionnalite\\$fct";
 			if (method_exists($fct, $methode)) {
 				$reponse = call_user_func_array(array($fct, $methode), $params);
-				if ($reponse) $resultat[$fct] = $reponse;
+				if ($reponse) {
+					$resultat[$fct] = $reponse;
+				}
 			}
 		}
 		return $resultat;

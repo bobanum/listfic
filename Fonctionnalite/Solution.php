@@ -6,7 +6,7 @@ class Solution extends Fonctionnalite {
 	static public $nomChamp = "solution";
 	static public $etiquette = "Solution";
 	static public $description = 'Booléen. Y a-t-il des fichiers de solution?';
-	public function admin_gerer() {
+	static public function admin_gerer() {
 		//Rendre la solution visible
 		if (!isset($_GET['s'])) {
 			return false;

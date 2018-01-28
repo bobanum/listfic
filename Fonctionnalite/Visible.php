@@ -5,7 +5,7 @@ class Visible extends Fonctionnalite {
 	static public $nomChamp = "visible";
 	static public $etiquette = "Visible";
 	static public $description = 'Booléen. Le dossier est-il visible dans la liste? Il reste tout de même accessible.';
-	public function admin_gerer() {
+	static public function admin_gerer() {
 		//Rendre le projet visible
 		if (!isset($_GET['v'])) return false;
 		$resultat = '';
