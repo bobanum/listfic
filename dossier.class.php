@@ -391,6 +391,20 @@ class Dossier {
 		$form .= '</div>';
 		return $form;
 	}
+	public function html_lienFichier($nom, $extensions=["htm","html","php"]) {
+		$etiquette = static::$etiquettes[$nom];
+		if (isset($this->liens[$etiquette])) {
+			return "";
+		}
+		foreach ($extensions as $extension) {
+			$path = "$this->path/$nom.$extension";
+			$url = "$this->url/$nom.$extension";
+			if (file_exists($path)) {
+				return '<a href="'.$url.'" class="'.$nom.'">'.$etiquette.'</a>';
+			}
+		}
+		return "";
+	}
 	/**
 	 * Retourne une liste de liens html associés au dossier
 	 * @return string La liste de liens
@@ -399,10 +413,10 @@ class Dossier {
 		//TODO Vérifier la précéance entre les liens ds ini et la présence du fichier. Présemtement, le fichier l'emporte
 		$liens = array();
 		// Lien CONSIGNES
-		$path = "$this->path/consignes.htm";
-		$url = "$this->url/consignes.htm";
-		$etiquette = static::$etiquettes['consignes'];
-		if (!isset($this->liens[$etiquette]) && file_exists($path)) $liens[] = '<a href="'.$url.'" class="consignes">'.$etiquette.'</a>';
+		$lien = $this->html_lienFichier("consignes");
+		if ($lien) {
+			$liens[] = $lien;
+		}
 		// Lien FICHIERS
 		$etiquette = Fct_fichiers::$etiquette;
 		if (!isset($this->liens[$etiquette]) && ($lien = Fct_fichiers::html_lien($this))!="") {
