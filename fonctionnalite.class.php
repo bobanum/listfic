@@ -1,6 +1,6 @@
 <?php
-include_once "dossier_abstract.class.php";
-include_once "listfic_abstract.class.php";
+include_once "dossier.class.php";
+include_once "listfic.class.php";
 abstract class Fonctionnalite {
 	static public $nom = "Fonctionnalite";
 	static public $nomChamp = "fonctionnalite";
