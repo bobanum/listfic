@@ -184,25 +184,35 @@ class Listfic {
 	//////////////////////////////////////////////////////////////////////////////
 	// ADMINISTRATION ////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
-	static public function gererTelecharger() {
-		if (!count($_GET)==1) return;
-		$data = array_keys($_GET);
-		$data = Dossier::decoder($data[0]);
-		if (!$data) return;
-		if (isset($data[2])) $data[2] = str_replace(array('$0','$1'), array($data[0],$data[1]), $data[2]);
-		else $data[2] = $data[1].'.zip';
-		if (isset($data[3])) $data[3] = str_replace(array('$0','$1'), array($data[0],$data[1]), $data[3]);
-		else $data[3] = $data[2];
-		if (!($fichier = static::recupererFic($data))) return;
-		$nomFinal = $data[3];
-		header("content-type:application/zip");
-		header("content-disposition:attachment; filename=".$nomFinal);
-		echo $fichier;
-		exit;
+	/**
+	 * [[Description]]
+	 */
+	static public function gererTelecharger($data) {
+		if (!$data || count($data) === 0) {
+			return "";
+		}
+		$keys = array_keys($data);
+		$values = array_values($data);
+		if (count($data) === 1 && $values[0] === "") {
+			$data = Dossier::decoder($keys[0]);
+			if (!$data) {
+				return;
+			}
+		}
+		$type = $keys[0];
+		$nomDossier = $values[0];
+		$nomFic = $nomDossier.'.zip';
+
+		$path = static::recupererFic($type, $nomDossier, $nomFic);
+		if ($path) {
+			$nomFinal = basename($path);
+			header("content-type:application/zip");
+			header("content-disposition:attachment; filename=".$nomFinal);
+			readfile($path);
+			exit;
+		}
 	}
-	static public function recupererFic($data) {
-		$type=$data[0];
-		$nomDossier = $data[1];
+	static public function recupererFic($type, $nomDossier, $nomFic) {
 		try {
 			$dossier = new Dossier($nomDossier);
 		} catch (Exception $exc) {
@@ -212,25 +222,29 @@ class Listfic {
 			case 'fichiers': case 'f':
 				$path = $dossier->pathZip();
 				if ($dossier->fichiers && file_exists($path)) {
-					return file_get_contents($path);
+					return $path;
+				} else {
+					return "";
 				}
 			break;
 			case 'solution': case 's':
 				$path = $dossier->pathZip(Dossier::$suffixe_solution);
 				if ($dossier->solution && file_exists($path)) {
-					return file_get_contents($path);
+					return $path;
+				} else {
+					return "";
 				}
 			break;
 			case 'url': case 'u':
-				$nomFic=$data[2];
-				$nomFic = str_replace(array('$0','$1'), array($data[0],$data[1]), $nomFic);
 				$path = $dossier->path.'/'.$nomFic;
 				if (file_exists($path)) {
-					return file_get_contents($path);
+					return $path;
+				} else {
+					return "";
 				}
 			break;
 		}
-		return '';
+		return "";
 	}
 	public function admin_gerer() {
 		if (isset($_GET['quitter'])) {

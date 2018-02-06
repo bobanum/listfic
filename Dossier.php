@@ -543,11 +543,10 @@ class Dossier {
 	}
 	public function lienFichiers($flags=0) {
 		// Lien FICHIERS
-		$data[] = ($flags & self::PATH_SOLUTION) ? "solution" : "fichiers";
-		$etiquette = self::$etiquettes[$data[0]];
-		//$etiquette = '<img src="'.dirname($this->url).'/_listfic/'.$data[0].'16.png" alt="'.$etiquette.'" />';
-		$data[] = $this->url;
-		return self::lienTelecharger($etiquette, $data, $data[0]);
+		$type = ($flags & self::PATH_SOLUTION) ? "solution" : "fichiers";
+		$etiquette = self::$etiquettes[$type];
+		$data[$type] = $this->url;
+		return self::lienTelecharger($etiquette, $data, $type);
 	}
 	static public function lienTelecharger($etiquette, $data, $class='') {
 		if ($class) $class = ' class="telecharger '.$class.'"';
