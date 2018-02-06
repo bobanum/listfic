@@ -457,14 +457,16 @@ class Dossier {
 	/** Devrait être surchargée par l'application */
 	public function ligneProjet($admin=false){
 		$resultat = '';
-		$resultat .= ($this->visible) ? '<li class="projet clearfix">' : '<li class="projet off clearfix">';
+		$resultat .= ($this->visible) ? '<li class="projet">' : '<li class="projet off">';
 		$resultat .= ($admin) ? $this->boutonsAdmin() : '';
 		$resultat .= $this->creerBoutonsLiens();
 		$resultat .= '<a target="_blank" href="'.$this->url.'">';
 		$resultat .= ($this->prefixe) ? $this->prefixe. " : " : '';
 		$resultat .= '<b>'.$this->titre.'</b>';
+		if ($this->source) {
+			$resultat .= '<span class="source_visible" title="Code source inclus dans la page">&#9873;</span>';
+		}
 		$resultat .= '</a>';
-		if ($this->source) $resultat .= '<sup style="cursor:pointer;" title="Code source inclus dans la page">&#9873;</sup>';
 		$resultat .= '</li>';
 		return $resultat;
 	}
@@ -498,7 +500,7 @@ class Dossier {
 			$path = "$this->path/$nom.$extension";
 			$url = "$this->url/$nom.$extension";
 			if (file_exists($path)) {
-				return '<a href="'.$url.'" class="'.$nom.'">'.$etiquette.'</a>';
+				return '<a href="'.$url.'" class="'.$nom.'" title="'.$etiquette.'"></a>';
 			}
 		}
 		return "";
@@ -529,12 +531,12 @@ class Dossier {
 		foreach ($this->liens as $etiquette=>$adresse) {
 			// C'est un lien absolu : on ne vérifie pas la présence
 			if (preg_match('#^/|^[a-z+]*:\/\/#', $adresse)) {
-				$liens[] = '<a href="'.$adresse.'" title="'.$etiquette.'">'.$etiquette.'</a>';
+				$liens[] = '<a href="'.$adresse.'" title="'.$etiquette.'"></a>';
 			} else {
 				$path = $this->path.'/'.$url;
 				$url = $this->url.'/'.$adresse;
 				//if (file_exists($path))
-					$liens[] = '<a href="'.$url.'" title="'.$etiquette.'">'.$etiquette.'</a>';
+					$liens[] = '<a href="'.$url.'" title="'.$etiquette.'"></a>';
 			}
 		}
 		return $liens;
@@ -550,7 +552,7 @@ class Dossier {
 	static public function lienTelecharger($etiquette, $data, $class='') {
 		if ($class) $class = ' class="telecharger '.$class.'"';
 		else $class = ' class="telecharger"';
-		return '<a href="telecharger.php?'.self::encoder($data).'"'.$class.' title="'.$etiquette.'">'.$etiquette.'</a>';
+		return '<a href="telecharger.php?'.self::encoder($data).'"'.$class.' title="'.$etiquette.'"></a>';
 	}
 	static public function encoder($data) {
 		$data = serialize($data);
@@ -665,7 +667,9 @@ class Dossier {
 	public function creerBoutonsLiens() {
 		$liens = $this->creerLiens();
 		$liens = implode("", $liens);
-		if ($liens) return ' <span class="boutons-liens">'.$liens.'</span>';
+		if ($liens) {
+			return ' <span class="boutons-liens">'.$liens.'</span>';
+		}
 		else return '';
 	}
 }
