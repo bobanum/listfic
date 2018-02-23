@@ -6,8 +6,9 @@ spl_autoload_register(function ($name) {
 		$name = implode("/", $name).".php";
 		throw new \Exception("Mauvais namespace '$name'");
 		return false;
-
 	}
+	array_shift($name);
 	$name = implode("/", $name).".php";
-	require_once($name);
+//	exit ($name);
+	require_once __DIR__."/".$name;
 });

@@ -362,7 +362,14 @@ class Dossier {
 			$path = substr($path, 0, -strlen($element)).implode("/", array_slice(explode("/", $element), 1));
 			$this->zipper_ajouter($zip, $path, $element);
 		} else {
-			$zip->addFile($path, $element);
+			if (substr($path, -4) === ".php") {
+				$code = file_get_contents($path);
+				$pattern = '#<[^<]+source\.php[^>]+>#';
+				$code = preg_replace($pattern, '', $code);
+				$zip->addFromString($element, $code);
+			} else {
+				$zip->addFile($path, $element);
+			}
 		}
 		return true;
 	}
@@ -460,7 +467,7 @@ class Dossier {
 		$resultat .= ($this->visible) ? '<li class="projet">' : '<li class="projet off">';
 		$resultat .= ($admin) ? $this->boutonsAdmin() : '';
 		$resultat .= $this->creerBoutonsLiens();
-		$resultat .= '<a target="_blank" href="'.$this->url.'">';
+		$resultat .= '<a target="_blank" href="'.$this->url.'/">';
 		$resultat .= ($this->prefixe) ? $this->prefixe. " : " : '';
 		$resultat .= '<b>'.$this->titre.'</b>';
 		if ($this->source) {
@@ -533,7 +540,7 @@ class Dossier {
 			if (preg_match('#^/|^[a-z+]*:\/\/#', $adresse)) {
 				$liens[] = '<a href="'.$adresse.'" title="'.$etiquette.'"></a>';
 			} else {
-				$path = $this->path.'/'.$url;
+				$path = $this->path.'/'.$this->url;
 				$url = $this->url.'/'.$adresse;
 				//if (file_exists($path))
 					$liens[] = '<a href="'.$url.'" title="'.$etiquette.'"></a>';

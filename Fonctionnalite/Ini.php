@@ -1,5 +1,6 @@
 <?php
 namespace Listfic\Fonctionnalite;
+use Listfic\Dossier;
 class Ini extends Fonctionnalite {
 	static public $nom = "Ini";
 	static public $nomChamp = "";

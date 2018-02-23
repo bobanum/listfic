@@ -187,7 +187,10 @@ class Listfic {
 	/**
 	 * [[Description]]
 	 */
-	static public function gererTelecharger($data) {
+	static public function gererTelecharger($data=null) {
+		if (is_null($data)) {
+			$data = $_GET;
+		}
 		if (!$data || count($data) === 0) {
 			return "";
 		}
@@ -198,11 +201,15 @@ class Listfic {
 			if (!$data) {
 				return;
 			}
+			$type = $data[0];
+			$nomDossier = $data[1];
+		} else {
+			$type = $keys[0];
+			$nomDossier = $values[0];
 		}
-		$type = $keys[0];
-		$nomDossier = $values[0];
 		$nomFic = $nomDossier.'.zip';
-
+//		var_dump($data, $keys, $values, $type, $nomDossier, $nomFic);
+//		exit;
 		$path = static::recupererFic($type, $nomDossier, $nomFic);
 		if ($path) {
 			$nomFinal = basename($path);
@@ -331,7 +338,11 @@ class Listfic {
 			array_shift($script);
 			array_shift($page);
 		}
-		$page = array_fill(0, count($page), "..");
+		if (count($page) > 0) {
+			$page = array_fill(0, count($page), "..");
+		} else {
+			$page = [];
+		}
 		$url = array_merge($page, $script);
 		if ($fichier) {
 			array_push($url, $fichier);
