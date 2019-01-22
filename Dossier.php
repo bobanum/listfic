@@ -8,7 +8,7 @@ class Dossier {
 	/** @var string - Le nom du petit fichier à laisser dans le dossier */
 	static public $nomIni = "_ini.php";
 	/** @var string - Tableau des regexp des fichiers/dossiers à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
-	static public $exclusionsZip = array('soulignementDebut'=>'^_', 'soulignementFin'=>'_$', 'pointDebut'=>'^\.');
+	static public $exclusionsZip = array(/*'soulignementDebut'=>'^_', */'soulignementFin'=>'_$', 'pointDebut'=>'^\.');
 	static public $etiquettes = array(
 			"fichiers"=>"Fichiers",
 			"solution"=>"Solution",
@@ -131,7 +131,9 @@ class Dossier {
 	 * @return \Dossier
 	 */
 	public function solution() {
-		if (func_num_args()==0) return $this->_solution;
+		if (func_num_args()==0) {
+			return $this->_solution;
+		}
 		$solution = func_get_arg(0);
 		if ($solution==true) {
 			$this->ajusterSousDossier(self::PATH_SOLUTION);
@@ -145,7 +147,9 @@ class Dossier {
 	 * @throws Exception
 	 */
 	public function pathFicIni() {
-			if (func_num_args()== 0) return $this->path."/".self::$nomIni;
+			if (func_num_args()== 0) {
+				return $this->path."/".self::$nomIni;
+			}
 			else throw new Exception("Propriété 'pathFicIni' en lecture seule");
 	}
 	// METHODES //////////////////////////////////////////////////////////////////
@@ -232,7 +236,23 @@ class Dossier {
 	 */
 	public function pathFic($suffixe="") {
 		$resultat = $this->path."/".basename($this->path).$suffixe;
-		return $resultat;
+		if (file_exists($resultat)) {
+			return $resultat;
+		}
+		if ($suffixe === "") {
+			$suffixe = "_fichiers";
+		}
+		$resultat = $this->path."/".$suffixe;
+		if (file_exists($resultat)) {
+			return $resultat;
+		}
+		if ($suffixe === "_fichiers") {
+			$resultat = $this->path."/".basename($this->path);
+			if (file_exists($resultat)) {
+				return $resultat;
+			}
+		}
+		return false;
 	}
 	/**
 	 * Retourne le chemin du fichier zip en fonction de la variable statique $pathZip;
@@ -265,8 +285,11 @@ class Dossier {
 		$pathZip = $this->pathZip($suffixe);
 		//s'il n'y a pas de ini_fichiers, on vérifie s'il y a un dossier du meme nom ou un zip
 		if (file_exists($pathZip) && file_exists($pathFic)) {
-			if (filemtime($pathZip)<filemtime($pathFic)) unlink($pathZip);	// Le zip est désuet
-			else return true;
+			if (filemtime($pathZip)<filemtime($pathFic)) {
+				unlink($pathZip);	// Le zip est désuet
+			} else {
+				return true;
+			}
 		}
 		// Il n'y a que le zip
 		if (file_exists($pathZip)) {
@@ -309,7 +332,10 @@ class Dossier {
 		$pathZip = $this->pathZip($suffixe);
 		$this->ajusterDossier(dirname($pathZip));
 		$path = realpath($pathFic);
-		$element = basename($pathFic);
+		$element = basename($this->path);
+		if ($suffixe && $suffixe != "_fichiers") {
+			$element .= $suffixe;
+		}
 		$zip = new ZipArchive;
 		$res = $zip->open($pathZip, ZipArchive::CREATE);
 		if ($res === TRUE) {
@@ -359,7 +385,7 @@ class Dossier {
 				$this->zipper_ajouter($zip, "$path/$nom", "$element/$nom");
 			}
 		} else if (filesize($path)==0) {
-			$path = substr($path, 0, -strlen($element)).implode("/", array_slice(explode("/", $element), 1));
+			$path = dirname(dirname($path)).'/'.basename($path);
 			$this->zipper_ajouter($zip, $path, $element);
 		} else {
 			if (substr($path, -4) === ".php") {
@@ -556,9 +582,25 @@ class Dossier {
 		return self::lienTelecharger($etiquette, $data, $type);
 	}
 	static public function lienTelecharger($etiquette, $data, $class='') {
-		if ($class) $class = ' class="telecharger '.$class.'"';
-		else $class = ' class="telecharger"';
-		return '<a href="telecharger.php?'.self::encoder($data).'"'.$class.' title="'.$etiquette.'"></a>';
+		$attrs = [];
+		if ($class) {
+			$attrs['class'] = 'telecharger '.$class.'';
+		} else {
+			$attrs['class'] = 'telecharger';
+		}
+		$attrs['href'] = 'telecharger.php?'.$data[0].'='.$data[1].'';
+//		$attrs['href'] = 'telecharger.php?'.self::encoder($data).'';
+		$attrs['title'] = $etiquette;
+		$attrs = self::attrString($attrs);
+		return '<a '.$attrs.'></a>';
+	}
+	static public function attrString($attrs) {
+		$resultat = [];
+		foreach ($attrs as $nom=>$val) {
+			$resultat[] = ''.$nom.'="'.htmlspecialchars($val).'"';
+		}
+		$resultat = implode(" ", $resultat);
+		return $resultat;
 	}
 	static public function encoder($data) {
 		$data = serialize($data);

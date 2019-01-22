@@ -37,8 +37,7 @@ class Fichiers extends Fonctionnalite {
 	 * @todo Permettre de forcer le lien pour l'admin
 	 */
 	static public function html_lien($objDossier) {
-		$path = $objDossier->path;
-		$path .= "/".basename($path);
+		$path = $objDossier->pathFic("_fichiers");
 
 		$etiquette = static::$etiquette;
 		$condition = $objDossier->fichiers;

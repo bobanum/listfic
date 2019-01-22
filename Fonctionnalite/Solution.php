@@ -38,9 +38,7 @@ class Solution extends Fonctionnalite {
 	 * @todo Permettre de forcer le lien pour l'admin
 	 */
 	static public function html_lien($objDossier) {
-		$path = $objDossier->path;
-		$path .= "/".basename($path).Dossier::$suffixe_solution;
-
+		$path = $objDossier->pathZip("_solution");
 		$etiquette = static::$etiquette;
 		$condition = $objDossier->solution;
 		if (!file_exists($path)) {
