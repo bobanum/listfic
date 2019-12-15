@@ -1,5 +1,6 @@
 <?php
 namespace Listfic\Fonctionnalite;
+use Listfic\Dossier;
 class Visible extends Fonctionnalite {
 	static public $nom = "Visible";
 	static public $nomChamp = "visible";

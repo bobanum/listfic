@@ -51,7 +51,7 @@ class Dossier {
 		if (!is_dir($dir)) $dir = dirname($dir);
 		$dir = realpath($dir);
 		if (!file_exists($dir)) {
-			throw new Exception ("Dossier '$dir' inexistant");
+			throw new \Exception ("Dossier '$dir' inexistant");
 		}
 		$this->path = $dir;
 		$this->url = $this->relatifSite($dir);
@@ -70,7 +70,7 @@ class Dossier {
 		}
 		$name = '_'.$name;
 		if (!property_exists($this, $name)) {
-			throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+			throw new \Exception('Propriété "'.substr($name,1).'" inconnue');
 		}
 		if ($this->$name != $value) {
 			$this->$name = $value;
@@ -90,7 +90,7 @@ class Dossier {
 		}
 		$name = '_'.$name;
 		if (!property_exists($this, $name)) {
-			throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+			throw new \Exception('Propriété "'.substr($name,1).'" inconnue');
 		}
 		return $this->$name;
 	}
@@ -102,7 +102,7 @@ class Dossier {
 	 */
 	public function prop($name) {
 		if (!property_exists($this, $name)) {
-			throw new Exception('Propriété "'.substr($name,1).'" inconnue');
+			throw new \Exception('Propriété "'.substr($name,1).'" inconnue');
 		}
 		if (func_num_args()==1) {
 			return $this->$name;
@@ -150,7 +150,7 @@ class Dossier {
 			if (func_num_args()== 0) {
 				return $this->path."/".self::$nomIni;
 			}
-			else throw new Exception("Propriété 'pathFicIni' en lecture seule");
+			else throw new \Exception("Propriété 'pathFicIni' en lecture seule");
 	}
 	// METHODES //////////////////////////////////////////////////////////////////
 	/**
@@ -540,11 +540,11 @@ class Dossier {
 	}
 	/**
 	 * Retourne une liste de liens html associés au dossier
-	 * @return string La liste de liens
+	 * @return array La liste de liens
 	 */
 	public function creerLiens() {
 		//TODO Vérifier la précéance entre les liens ds ini et la présence du fichier. Présemtement, le fichier l'emporte
-		$liens = array();
+		$liens = [];
 		// Lien CONSIGNES
 		$lien = $this->html_lienFichier("consignes");
 		if ($lien) {
@@ -566,7 +566,7 @@ class Dossier {
 			if (preg_match('#^/|^[a-z+]*:\/\/#', $adresse)) {
 				$liens[] = '<a href="'.$adresse.'" title="'.$etiquette.'"></a>';
 			} else {
-				$path = $this->path.'/'.$this->url;
+				// $path = $this->path.'/'.$this->url;
 				$url = $this->url.'/'.$adresse;
 				//if (file_exists($path))
 					$liens[] = '<a href="'.$url.'" title="'.$etiquette.'"></a>';

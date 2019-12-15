@@ -131,7 +131,7 @@ class Listfic {
 	public function affichageArbo() {
 		$resultat = '';
 		foreach($this->arbo as $cle=>&$val) {
-				$resultat .= '<article>';
+				$resultat .= '<article style="page-break-inside: avoid;">';
 				$resultat .= '<h2>'.$cle.'</h2>';
 				$resultat .= static::creerAffichageArbo($val, static::estAdmin());
 				$resultat .= '</article>';
@@ -222,8 +222,8 @@ class Listfic {
 	static public function recupererFic($type, $nomDossier, $nomFic) {
 		try {
 			$dossier = new Dossier($nomDossier);
-		} catch (Exception $exc) {
-			exit(erreur(2));
+		} catch (\Exception $exc) {
+			exit($exc);
 		}
 		switch ($type) {
 			case 'fichiers': case 'f':
@@ -360,9 +360,15 @@ class Listfic {
 	public function admin_affichage(){
 		if (!isset($_GET['admin'])) return '';
 		$resultat = '';
-		if (!$this->admin) return $this->admin_affichageFormLogin();
-		else $resultat .= $this->admin_affichageLogout ();
-echo $_GET['a'];		if (isset($_GET['a'])) $resultat .= $this->admin_affichageFormModifier();
+		if (!$this->admin) {
+			return $this->admin_affichageFormLogin();
+		} else {
+			$resultat .= $this->admin_affichageLogout ();
+		}
+		echo $_GET['a'];// TOFIX
+		if (isset($_GET['a'])) {
+			$resultat .= $this->admin_affichageFormModifier($_GET['a']);
+		}
 		return $resultat;
 	}
 	public function admin_affichageFormLogin(){
