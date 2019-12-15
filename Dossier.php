@@ -510,6 +510,9 @@ class Dossier {
 		}
 		return '<div class="ecran"><img src="'.$this->url.'/'.$nom.'" alt="'.$this->titre.'" /></div>';
 	}
+	public function affichageIFrame() {
+		return false;	//TODO Vérifier la pertinence
+	}
 	public function affichageFormModifier() {
 		$pathFicIni = $this->pathFicIni();
 		$ini = file_get_contents ($pathFicIni);

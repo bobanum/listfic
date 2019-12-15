@@ -1,12 +1,15 @@
 <?php
-use Listfic\Dossier
+use Listfic\Dossier;
 class Gerer {
 	const COPIER = 'Copier l\'original';
 	const REFERENCE = 'Créer une référence';
 	const SUPPRIMER = 'Supprimer';
 	const MODIFIER = 'Modifier';
 	const SUPPRIMERTOUT = 'Supprimer partout';
-	static public $suffixes = array("Fichiers"=>"", "Solution"=>Dossier::$suffixe_solution);
+	static public $suffixes = [
+		"Fichiers"=>"", 
+		"Solution"=>"solution", //TOFIX Dossier::$suffixe_solution,
+	];
 	static public function etatFic($fic, $suffixe="") {
 		$path = dirname($fic);
 		$dossier = basename($path);
@@ -144,7 +147,7 @@ class Gerer {
 			$affichage .= '<td>'.self::htmlmenu($menu).''.$nomfic.'</td>';
 			// $affichage .= '<td><a href="?dossier='.$dossier.'&fichier='.$nomfic.'" onclick="return Gerer.clicmenu.apply(this, arguments);">'.self::htmlmenu($menu).''.$nomfic.'</a></td>';
 			foreach ($suffixes as $nom=>$suf) {
-				$affichage .= self::etatFic($fic, $suf);
+				// $affichage .= self::etatFic($fic, $suf);
 			}
 			$affichage .= '</tr>';
 		}

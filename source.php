@@ -1,4 +1,5 @@
 <?php
+namespace Listfic;
 //TODO Présentement, on ne peut pas afficher la source d'un fichier dans un sous-dossier. À arranger.
 //echo __FILE__."<br>";
 //echo $_SERVER['PHP_SELF']."<br>";
