@@ -5,7 +5,7 @@
   // Categories sous forme "Catégorie/Sous-Catégorie/..."
   'categorie' => 'Autres',
   // Un préfixe à mettre devant le titre pour le tri "Cours 01 : "
-  'prefixe' => '',
+  'prefix' => '',
   // Un tableau de liens avec la clé comme étiquette et la valeur comme url
   'liens' =>
   array (

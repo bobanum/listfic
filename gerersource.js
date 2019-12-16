@@ -74,7 +74,7 @@ Gerer = (function(self) {
 		var params = "action=sauvegarder";
 		params += "&directory="+encodeURIComponent(this.directory.value)+"";
 		params += "&fichier="+encodeURIComponent(this.fichier.value)+"";
-		if (this.suffixe) params += "&suffixe="+encodeURIComponent(this.suffixe.value)+"";
+		if (this.suffix) params += "&suffix="+encodeURIComponent(this.suffix.value)+"";
 		params += "&texte="+encodeURIComponent(this.texte.value)+"";
 		console.log(params);
 		var ajax = XMLHttpRequest();

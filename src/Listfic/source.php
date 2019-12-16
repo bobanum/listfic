@@ -7,11 +7,11 @@ namespace Listfic;
 error_reporting(E_ALL);
 include_once 'autoload.php';
 if (isset($_GET['data'])) {
-	$data = Directory::decoder($_GET['data']);
+	$data = Directory::decode($_GET['data']);
 	$path = realpath(realpath('.')."/../".$data['d']);
 	$directory = new Directory($path);
 	if ($directory->solution) {
-		$path = $directory->pathFic(Directory::$suffixe_solution)."/".$data['p'];
+		$path = $directory->path_file(Directory::$solution_suffix)."/".$data['p'];
 		$code = highlight_file($path, true);
 		$code = substr($code, 36, -10).'<br />';
 		$code = str_replace('<br /></span>','</span><br />',$code);
@@ -35,9 +35,8 @@ function ajouterIframe($code) {
 	$directory = new Directory('.');
 	$code = "ici".$directory->url.$code;
 	if ($directory->solution) {
-		return str_replace('</body>', $directory->affichageIFrame().'</body>', $code);
+		return str_replace('</body>', $directory->html_iframe().'</body>', $code);
 	} else {
 		return $code;
 	}
 }
-?>

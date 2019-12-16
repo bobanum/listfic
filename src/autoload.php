@@ -1,14 +1,10 @@
 <?php
 namespace Listfic;
 spl_autoload_register(function ($name) {
-	$name = explode("\\", $name);
-	if ($name[0] !== "Listfic") {
-		$name = implode("/", $name).".php";
-		throw new \Exception("Mauvais namespace '$name'");
+	$name = str_replace("\\", "/", $name);
+	$name = realpath(__DIR__."/{$name}.php");
+	if (!file_exists($name)) {
 		return false;
 	}
-	array_shift($name);
-	$name = implode("/", $name).".php";
-//	exit ($name);
-	require_once __DIR__."/".$name;
+	require_once $name;
 });
