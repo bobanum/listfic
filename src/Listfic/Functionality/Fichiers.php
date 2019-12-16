@@ -1,7 +1,7 @@
 <?php
-namespace Listfic\Fonctionnalite;
-use Listfic\Dossier;
-class Fichiers extends Fonctionnalite {
+namespace Listfic\Functionality;
+use Listfic\Directory;
+class Fichiers extends Functionality {
 	static public $nom = "Fichiers";
 	static public $nomChamp = "fichiers";
 	static public $etiquette = "Fichiers";
@@ -11,19 +11,19 @@ class Fichiers extends Fonctionnalite {
 		//Rendre les fichiers de départ visibles
 		if (!isset($_GET['f'])) return false;
 		$resultat = '';
-		foreach($_GET['f'] as $dossier=>$etat) {
-			$objDossier = new Dossier($dossier);
-			$objDossier->fichiers = ($etat == 'true');
-			$objDossier->mettreIni(true);
-			$resultat .= $objDossier->ligneProjet(true);
+		foreach($_GET['f'] as $directory=>$etat) {
+			$objDirectory = new Directory($directory);
+			$objDirectory->fichiers = ($etat == 'true');
+			$objDirectory->mettreIni(true);
+			$resultat .= $objDirectory->ligneProjet(true);
 		}
 		return $resultat;
 	}
-	static public function html_bouton($objDossier){
-		$data = 'f['.urlencode($objDossier->url).']';
-		if ($objDossier->fichiers) {
+	static public function html_bouton($objDirectory){
+		$data = 'f['.urlencode($objDirectory->url).']';
+		if ($objDirectory->fichiers) {
 			$resultat = '<a class="fichiers toggle on" href="?admin&'.$data.'=false">F</a>';
-		} else if (file_exists($objDossier->pathFic())) {
+		} else if (file_exists($objDirectory->pathFic())) {
 			$resultat = '<a class="fichiers toggle off" href="?admin&'.$data.'=true">F</a>';
 		} else {
 			$resultat = '<a class="fichiers toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
@@ -32,22 +32,22 @@ class Fichiers extends Fonctionnalite {
 	}
 	/**
 	 * Retourne un lien HTML vers le zip des fichiers en vérifiant toutes les conditions
-	 * @param Dossier $objDossier L'objet dossier à analyser
+	 * @param Directory $objDirectory L'objet directory à analyser
 	 * @return string Le <a> résultant
 	 * @todo Permettre de forcer le lien pour l'admin
 	 */
-	static public function html_lien($objDossier) {
-		$path = $objDossier->pathFic("_fichiers");
+	static public function html_lien($objDirectory) {
+		$path = $objDirectory->pathFic("_fichiers");
 
 		$etiquette = static::$etiquette;
-		$condition = $objDossier->fichiers;
+		$condition = $objDirectory->fichiers;
 		if (!file_exists($path)) {
 			return "";
 		}
 		if ($condition===false) {
 			return "";
 		}
-		$lien = Dossier::lienTelecharger($etiquette, array("fichiers", $objDossier->url), 'fichiers');
+		$lien = Directory::lienTelecharger($etiquette, array("fichiers", $objDirectory->url), 'fichiers');
 		if ($condition===true) {
 			return $lien;
 		}
@@ -59,21 +59,21 @@ class Fichiers extends Fonctionnalite {
 			else return "";
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
-		$path = $objDossier->path.'/'.$condition;
-		$url = $objDossier->url.'/'.$condition;
+		$path = $objDirectory->path.'/'.$condition;
+		$url = $objDirectory->url.'/'.$condition;
 		if (file_exists($path)) {
 			return '<a href="'.$url.'">'.$etiquette.'</a>';
 		}
 		return "";
 	}
-	static public function html_form($objDossier) {
-		$champ = static::html_select($objDossier, array('Disponible'=>'true','Non disponible'=>'false',));
+	static public function html_form($objDirectory) {
+		$champ = static::html_select($objDirectory, array('Disponible'=>'true','Non disponible'=>'false',));
 		return static::html_form_ligne($champ);
 	}
-	static public function prendreIni($objDossier, $ini){
-		parent::prendreIni($objDossier, $ini);
-		if ($objDossier->fichiers == true) {
-				$objDossier->fichiers = $objDossier->ajusterZip();
+	static public function prendreIni($objDirectory, $ini){
+		parent::prendreIni($objDirectory, $ini);
+		if ($objDirectory->fichiers == true) {
+				$objDirectory->fichiers = $objDirectory->ajusterZip();
 		}
 	}
 }

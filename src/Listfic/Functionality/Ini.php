@@ -1,23 +1,23 @@
 <?php
-namespace Listfic\Fonctionnalite;
-use Listfic\Dossier;
-class Ini extends Fonctionnalite {
+namespace Listfic\Functionality;
+use Listfic\Directory;
+class Ini extends Functionality {
 	static public $nom = "Ini";
 	static public $nomChamp = "";
 	static public $etiquette = "Fichier INI";
 	static public $description = 'Le fichier ini au complet';
-	static public function html_form($objDossier){
+	static public function html_form($objDirectory){
 		return "";
 	}
-	static public function html_bouton($objDossier){
-		$resultat = '<a style="font-size: 150%; line-height: 0; position: relative; text-decoration: none; top: 0.21em;" href="?admin&a='.urlencode($objDossier->url).'">&#x270D;</a>';
+	static public function html_bouton($objDirectory){
+		$resultat = '<a style="font-size: 150%; line-height: 0; position: relative; text-decoration: none; top: 0.21em;" href="?admin&a='.urlencode($objDirectory->url).'">&#x270D;</a>';
 		return $resultat;
 	}
 	static public function admin_gerer() {
 		if (!isset($_GET['a'])) return "";
-		$dossier = array_keys($_GET['a']);
-		$objDossier = new Dossier($dossier[0]);
-		$resultat = $objDossier->affichageFormModifier();
+		$directory = array_keys($_GET['a']);
+		$objDirectory = new Directory($directory[0]);
+		$resultat = $objDirectory->affichageFormModifier();
 		return $resultat;
 	}
 }

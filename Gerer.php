@@ -1,5 +1,5 @@
 <?php
-use Listfic\Dossier;
+use Listfic\Directory;
 class Gerer {
 	const COPIER = 'Copier l\'original';
 	const REFERENCE = 'Créer une référence';
@@ -8,18 +8,18 @@ class Gerer {
 	const SUPPRIMERTOUT = 'Supprimer partout';
 	static public $suffixes = [
 		"Fichiers"=>"", 
-		"Solution"=>"solution", //TOFIX Dossier::$suffixe_solution,
+		"Solution"=>"solution", //TOFIX Directory::$suffixe_solution,
 	];
 	static public function etatFic($fic, $suffixe="") {
 		$path = dirname($fic);
-		$dossier = basename($path);
+		$directory = basename($path);
 		$nomfic = basename($fic);
-		$fic2 = "$path/$dossier$suffixe/$nomfic";
+		$fic2 = "$path/$directory$suffixe/$nomfic";
 		$affichage = '';
-		$menu[self::COPIER] = "dossier=$dossier&fichier=$nomfic&suffixe=$suffixe&action=copier";
-		$menu[self::REFERENCE] = "dossier=$dossier&fichier=$nomfic&suffixe=$suffixe&action=reference";
-		$menu[self::SUPPRIMER] = "dossier=$dossier&fichier=$nomfic&suffixe=$suffixe&action=supprimer";
-		$menu[self::MODIFIER] = "dossier=$dossier&fichier=$nomfic&suffixe=$suffixe&action=modifier";
+		$menu[self::COPIER] = "directory=$directory&fichier=$nomfic&suffixe=$suffixe&action=copier";
+		$menu[self::REFERENCE] = "directory=$directory&fichier=$nomfic&suffixe=$suffixe&action=reference";
+		$menu[self::SUPPRIMER] = "directory=$directory&fichier=$nomfic&suffixe=$suffixe&action=supprimer";
+		$menu[self::MODIFIER] = "directory=$directory&fichier=$nomfic&suffixe=$suffixe&action=modifier";
 		if (file_exists($fic2)) {
 			if (filesize($fic2)==0) {
 				$menu[self::REFERENCE] = false;
@@ -52,12 +52,12 @@ class Gerer {
 		$resultat .= '</ul>';
 		return $resultat;
 	}
-	static public function ficsDossier($dossier, $suffixes) {
-		$suffixe_solution = Dossier::$suffixe_solution;
-		$fics = array_merge(glob("$dossier/*"), glob("$dossier/$dossier/*"), glob("$dossier/{$dossier}{$suffixe_solution}/*"));
-		$fics = array_diff($fics, glob("$dossier/$dossier"));
+	static public function ficsDirectory($directory, $suffixes) {
+		$suffixe_solution = Directory::$suffixe_solution;
+		$fics = array_merge(glob("$directory/*"), glob("$directory/$directory/*"), glob("$directory/{$directory}{$suffixe_solution}/*"));
+		$fics = array_diff($fics, glob("$directory/$directory"));
 		foreach($suffixes as $s) {
-			$fics = array_diff($fics, glob("$dossier/{$dossier}{$s}"));
+			$fics = array_diff($fics, glob("$directory/{$directory}{$s}"));
 		}
 		$resultat = array();
 		$arr = array(0=>null);
@@ -68,25 +68,25 @@ class Gerer {
 			$f = basename($val);
 			$d = dirname($val);
 			if (!isset($resultat[$f])) $resultat[$f] = $arr;
-			if ($d == "$dossier") {
-				$resultat[$f][0] = filesize("$dossier/$f");
+			if ($d == "$directory") {
+				$resultat[$f][0] = filesize("$directory/$f");
 			} else {
 				foreach($suffixes as $s) {
-					if ($d == "$dossier/$dossier{$s}") $resultat[$f][$s] = filesize("$dossier/$dossier{$s}/$f");
+					if ($d == "$directory/$directory{$s}") $resultat[$f][$s] = filesize("$directory/$directory{$s}/$f");
 				}
 			}
 		}
 		ksort($resultat);
 		return $resultat;
 	}
-	static public function execDossier($dossier) {
+	static public function execDirectory($directory) {
 		$affichage = '';
-		$affichage .= '<div>Dossier : <a href="gerersource.php">racine</a>/'.$dossier.'</div>';
+		$affichage .= '<div>Directory : <a href="gerersource.php">racine</a>/'.$directory.'</div>';
 		$suffixes = self::$suffixes;
 		foreach (self::$suffixes as $nom=>$s) {
-			if (!file_exists("$dossier/$dossier$s")) {
-				$data = "dossier=$dossier&suffixe=$s&action=creerdossier";
-				$affichage .= '<div><a href="?'.$data.'">Ajouter un dossier "'.$nom.'"</a></div>';
+			if (!file_exists("$directory/$directory$s")) {
+				$data = "directory=$directory&suffixe=$s&action=creerdirectory";
+				$affichage .= '<div><a href="?'.$data.'">Ajouter un directory "'.$nom.'"</a></div>';
 				unset($suffixes[$nom]);
 			}
 		}
@@ -94,7 +94,7 @@ class Gerer {
 		$affichage .= '<thead>';
 		$affichage .= '<tr>';
 		$affichage .= '<th>Nom</th>';
-		$fics = self::ficsDossier($dossier, $suffixes);
+		$fics = self::ficsDirectory($directory, $suffixes);
 		$affichage .= '<th>Original</th>';
 		foreach ($suffixes as $nom=>$s) {
 			$affichage .= '<th>'.$nom.'</th>';
@@ -104,9 +104,9 @@ class Gerer {
 		$affichage .= '<tbody>';
 		foreach($fics as $nomfic=>$fic_array) {
 			$affichage .= '<tr>';
-			$menu = array(self::SUPPRIMERTOUT=>"dossier=$dossier&fichier=$nomfic&action=supprimertout");
+			$menu = array(self::SUPPRIMERTOUT=>"directory=$directory&fichier=$nomfic&action=supprimertout");
 			$affichage .= '<td class="nom">'.self::htmlmenu($menu).''.$nomfic.'</td>';
-			$dataUrl = "dossier=$dossier&fichier=$nomfic";
+			$dataUrl = "directory=$directory&fichier=$nomfic";
 			$menu = array();
 			$menu[self::COPIER] = "action=copier&$dataUrl";
 			$menu[self::REFERENCE] = "action=reference&$dataUrl";
@@ -115,18 +115,18 @@ class Gerer {
 			if (isset($fic_array[0])) {
 				$menu[self::COPIER] = $menu[self::REFERENCE] = false;
 				$affichage .= '<td class="present" title="taille:'.$fic_array[0].'">'.self::htmlmenu($menu).'√</td>';
-				$texte0 = file_get_contents("$dossier/$nomfic");
+				$texte0 = file_get_contents("$directory/$nomfic");
 			} else {
 				$menu[self::COPIER] = $menu[self::REFERENCE] = $menu[self::SUPPRIMER] = $menu[self::MODIFIER] = false;
 				$affichage .= '<td class="absent">'.self::htmlmenu($menu).'-</td>';
 				$texte0 = null;
 			}
 			foreach ($suffixes as $nom=>$s) {
-				$dataUrl = "dossier=$dossier&fichier=$nomfic&suffixe=$s";
+				$dataUrl = "directory=$directory&fichier=$nomfic&suffixe=$s";
 				if (isset($fic_array[$s])) {
 					if ($fic_array[$s]==0) {
 						$affichage .= self::td($dataUrl, 'reference');
-					} else if ($fic_array[0] === $fic_array[$s] && $texte0 == file_get_contents("$dossier/$dossier$s/$nomfic")) {
+					} else if ($fic_array[0] === $fic_array[$s] && $texte0 == file_get_contents("$directory/$directory$s/$nomfic")) {
 						$affichage .= self::td($dataUrl, 'pareil');
 					} else {
 						$affichage .= self::td($dataUrl, 'different');
@@ -140,12 +140,12 @@ class Gerer {
 		return $affichage;
 		foreach($fics as $nomfic=>$fic_array) {
 			$affichage .= '<tr>';
-			// $menu[self::COPIER] = "dossier=$dossier&fichier=$nomfic&action=copier";
-			// $menu[self::REFERENCE] = "dossier=$dossier&fichier=$nomfic&action=reference";
-			// $menu[self::SUPPRIMER] = "dossier=$dossier&fichier=$nomfic&action=supprimer";
-			$menu[self::MODIFIER] = "dossier=$dossier&fichier=$nomfic&action=modifier";
+			// $menu[self::COPIER] = "directory=$directory&fichier=$nomfic&action=copier";
+			// $menu[self::REFERENCE] = "directory=$directory&fichier=$nomfic&action=reference";
+			// $menu[self::SUPPRIMER] = "directory=$directory&fichier=$nomfic&action=supprimer";
+			$menu[self::MODIFIER] = "directory=$directory&fichier=$nomfic&action=modifier";
 			$affichage .= '<td>'.self::htmlmenu($menu).''.$nomfic.'</td>';
-			// $affichage .= '<td><a href="?dossier='.$dossier.'&fichier='.$nomfic.'" onclick="return Gerer.clicmenu.apply(this, arguments);">'.self::htmlmenu($menu).''.$nomfic.'</a></td>';
+			// $affichage .= '<td><a href="?directory='.$directory.'&fichier='.$nomfic.'" onclick="return Gerer.clicmenu.apply(this, arguments);">'.self::htmlmenu($menu).''.$nomfic.'</a></td>';
 			foreach ($suffixes as $nom=>$suf) {
 				// $affichage .= self::etatFic($fic, $suf);
 			}
@@ -155,11 +155,11 @@ class Gerer {
 		$affichage .= '</table>';
 		return $affichage;
 	}
-	static public function baseMenu($dossier, $fichier, $suffixe) {
+	static public function baseMenu($directory, $fichier, $suffixe) {
 	}
 	static public function td($dataUrl, $class) {
 		$affichage = '';
-		//$dataUrl = "dossier=$dossier&fichier=$nomfic&suffixe=$suffixe";
+		//$dataUrl = "directory=$directory&fichier=$nomfic&suffixe=$suffixe";
 		$menu = array();
 		$menu[self::COPIER] = "action=copier&$dataUrl";
 		$menu[self::REFERENCE] = "action=reference&$dataUrl";
@@ -198,14 +198,14 @@ class Gerer {
 		$affichage .= '<tbody>';
 		foreach($fics as $fic) {
 			$affichage .= '<tr>';
-			$affichage .= '<td><a href="?dossier='.basename($fic).'">'.basename($fic).'</a></td>';
+			$affichage .= '<td><a href="?directory='.basename($fic).'">'.basename($fic).'</a></td>';
 			if (file_exists($fic.'/'.basename($fic))) {
 				$affichage .= '<td>X</td>';
 			}
 			else {
 				$affichage .= '<td>-</td>';
 			}
-			if (file_exists($fic.'/'.basename($fic).Dossier::$suffixe_solution)) {
+			if (file_exists($fic.'/'.basename($fic).Directory::$suffixe_solution)) {
 				$affichage .= '<td>X</td>';
 			}
 			else {
@@ -217,9 +217,9 @@ class Gerer {
 		$affichage .= '</table>';
 		return $affichage;
 	}
-	static public function execFichier($dossier, $fichier, $suffixe=null) {
+	static public function execFichier($directory, $fichier, $suffixe=null) {
 		if (!isset($_GET['action']) || $_GET['action']=="modifier") {
-			$resultat = self::editeur($dossier, $fichier, $suffixe);
+			$resultat = self::editeur($directory, $fichier, $suffixe);
 			header("content-type:text/html");
 			echo $resultat;
 		}
@@ -233,15 +233,15 @@ class Gerer {
 		if (isset($_GET['action'])) {
 			$action = $_GET['action'];
 			if ($action == "copier") {
-				if (!isset($_GET['dossier']) || !isset($_GET['suffixe']) || !isset($_GET['fichier'])) {
+				if (!isset($_GET['directory']) || !isset($_GET['suffixe']) || !isset($_GET['fichier'])) {
 					print_r($_GET);
 					exit("false".__LINE__);
 				}
-				$dossier = $_GET['dossier'];
+				$directory = $_GET['directory'];
 				$fichier = $_GET['fichier'];
 				$suffixe = $_GET['suffixe'];
-				$path0 = "$dossier/$fichier";
-				$path = "$dossier/$dossier$suffixe/$fichier";
+				$path0 = "$directory/$fichier";
+				$path = "$directory/$directory$suffixe/$fichier";
 				if (!file_exists($path0)) {
 					exit("false".__LINE__);
 				}
@@ -249,86 +249,86 @@ class Gerer {
 					self::unlink($path);
 				}
 				self::copy($path0, $path);
-				$dataUrl = "dossier=$dossier&fichier=$fichier&suffixe=$suffixe";
+				$dataUrl = "directory=$directory&fichier=$fichier&suffixe=$suffixe";
 				$retour = self::td($dataUrl, 'pareil');
 				echo $retour;
 				exit();
 			} elseif ($action == 'reference') {
-				if (!isset($_GET['dossier']) || !isset($_GET['suffixe']) || !isset($_GET['fichier'])) {
+				if (!isset($_GET['directory']) || !isset($_GET['suffixe']) || !isset($_GET['fichier'])) {
 					print_r($_GET);
 					exit("false".__LINE__);
 				}
-				$dossier = $_GET['dossier'];
+				$directory = $_GET['directory'];
 				$fichier = $_GET['fichier'];
 				$suffixe = $_GET['suffixe'];
-				$path0 = "$dossier/$fichier";
-				$path = "$dossier/$dossier$suffixe/$fichier";
+				$path0 = "$directory/$fichier";
+				$path = "$directory/$directory$suffixe/$fichier";
 				if (file_exists($path)) {
 					self::unlink($path);
 				}
 				file_put_contents($path, '');
-				$dataUrl = "dossier=$dossier&fichier=$fichier&suffixe=$suffixe";
+				$dataUrl = "directory=$directory&fichier=$fichier&suffixe=$suffixe";
 				$retour = self::td($dataUrl, 'reference');
 				echo $retour;
 				exit();
 			} elseif ($action == 'supprimer') {
-				if (!isset($_GET['dossier']) || !isset($_GET['suffixe']) || !isset($_GET['fichier'])) {
+				if (!isset($_GET['directory']) || !isset($_GET['suffixe']) || !isset($_GET['fichier'])) {
 					print_r($_GET);
 					exit("false".__LINE__);
 				}
-				$dossier = $_GET['dossier'];
+				$directory = $_GET['directory'];
 				$fichier = $_GET['fichier'];
 				$suffixe = $_GET['suffixe'];
-				$path = "$dossier/$dossier$suffixe/$fichier";
+				$path = "$directory/$directory$suffixe/$fichier";
 				if (file_exists($path)) {
 					self::unlink($path);
 				}
-				$dataUrl = "dossier=$dossier&fichier=$fichier&suffixe=$suffixe";
+				$dataUrl = "directory=$directory&fichier=$fichier&suffixe=$suffixe";
 				$retour = self::td($dataUrl, 'absent');
 				echo $retour;
 				exit();
-			} elseif ($action == 'creerdossier') {
-				if (!isset($_GET['dossier'])) {
+			} elseif ($action == 'creerdirectory') {
+				if (!isset($_GET['directory'])) {
 					self::aller();
 				}
-				$dossier = $_GET['dossier'];
+				$directory = $_GET['directory'];
 				if (!isset($_GET['suffixe'])) {
-					self::aller("?dossier=$dossier");
+					self::aller("?directory=$directory");
 				}
 				$suffixe = $_GET['suffixe'];
-				echo $path = "$dossier/$dossier$suffixe";
+				echo $path = "$directory/$directory$suffixe";
 				if (!file_exists($path)) {
 					mkdir($path);
 				}
-				self::aller("?dossier=$dossier");
+				self::aller("?directory=$directory");
 			}
 		}
 		if (isset($_POST['action'])) {
 			$action = $_POST['action'];
-			$dossier = $_POST['dossier'];
+			$directory = $_POST['directory'];
 			$fichier = $_POST['fichier'];
 			$suffixe = null;
 			if (isset($_POST['suffixe'])) {
 				$suffixe = $_POST['suffixe'];
 			}
-			$fic = self::pathfic($dossier, $fichier, $suffixe);
+			$fic = self::pathfic($directory, $fichier, $suffixe);
 			if ($action=="sauvegarder") {
 				rename($fic, "$fic.bak");
 				$nouveau = $_POST['texte'];
 				file_put_contents($fic, $nouveau);
 				exit('true');
 			}
-		} else if (isset($_GET['dossier'])) {
-			$dossier = $_GET['dossier'];
+		} else if (isset($_GET['directory'])) {
+			$directory = $_GET['directory'];
 			if (isset($_GET['fichier'])) {
 				$fichier = $_GET['fichier'];
 				$suffixe = null;
 				if (isset($_GET['suffixe'])) $suffixe = $_GET['suffixe'];
-				$affichage = self::execFichier($dossier, $fichier, $suffixe);
+				$affichage = self::execFichier($directory, $fichier, $suffixe);
 			} else {
-				$affichage = self::execDossier($dossier);
+				$affichage = self::execDirectory($directory);
 			}
-			$affichage = self::execDossier($dossier);
+			$affichage = self::execDirectory($directory);
 		} else {
 			$affichage = self::execRacine();
 		}
@@ -362,13 +362,13 @@ class Gerer {
 	    rmdir($src);
 	    closedir($dir);
 	}
-	static public function pathfic($dossier, $fichier, $suffixe=null) {
-		if (is_null($suffixe)) $fic =  "$dossier/$fichier";
-		else $fic = "$dossier/$dossier$suffixe/$fichier";
+	static public function pathfic($directory, $fichier, $suffixe=null) {
+		if (is_null($suffixe)) $fic =  "$directory/$fichier";
+		else $fic = "$directory/$directory$suffixe/$fichier";
 		return $fic;
 	}
-	static public function editeur($dossier, $fichier, $suffixe=null) {
-		$fic = self::pathfic($dossier, $fichier, $suffixe);
+	static public function editeur($directory, $fichier, $suffixe=null) {
+		$fic = self::pathfic($directory, $fichier, $suffixe);
 		$txt = file_get_contents($fic);
 		$resultat = '';
 		$resultat .= '<div id="ecran">';
@@ -378,7 +378,7 @@ class Gerer {
 		$resultat .= '<span class="readonly" onclick="return Gerer.clicreadonly.apply(this,arguments)"></span><textarea name="texte" readonly="readonly">'.htmlspecialchars($txt).'</textarea>';
 		$resultat .= '<div class="boutons">';
 		$resultat .= '<input type="hidden" name="action" value="sauvegarder"/>';
-		$resultat .= '<input type="hidden" name="dossier" value="'.htmlspecialchars($dossier).'"/>';
+		$resultat .= '<input type="hidden" name="directory" value="'.htmlspecialchars($directory).'"/>';
 		$resultat .= '<input type="hidden" name="fichier" value="'.htmlspecialchars($fichier).'"/>';
 		if (!is_null($suffixe)) $resultat .= '<input type="hidden" name="suffixe" value="'.htmlspecialchars($suffixe).'"/>';
 		$resultat .= '<input type="submit" id="envoyer" disabled="disabled"/>';

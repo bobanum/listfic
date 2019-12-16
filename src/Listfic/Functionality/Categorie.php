@@ -1,6 +1,6 @@
 <?php
-namespace Listfic\Fonctionnalite;
-class Categorie extends Fonctionnalite {
+namespace Listfic\Functionality;
+class Categorie extends Functionality {
 	static public $nom = "Categorie";
 	static public $nomChamp = "categorie";
 	static public $etiquette = "Catégorie";

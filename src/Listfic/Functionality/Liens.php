@@ -1,14 +1,14 @@
 <?php
-namespace Listfic\Fonctionnalite;
-class Liens extends Fonctionnalite {
+namespace Listfic\Functionality;
+class Liens extends Functionality {
 	static public $nom = "Liens";
 	static public $nomChamp = "liens";
 	static public $etiquette = "Liens";
 	static public $description = 'Un tableau de liens (étiquette=>url) ou une série de lignes (étiquette=url)';
-	static public function prendreIni($objDossier, $ini){
-		parent::prendreIni($objDossier, $ini);
-		if (!is_array($objDossier->liens)) {
-			$lignes = trim($objDossier->liens);
+	static public function prendreIni($objDirectory, $ini){
+		parent::prendreIni($objDirectory, $ini);
+		if (!is_array($objDirectory->liens)) {
+			$lignes = trim($objDirectory->liens);
 			if ($lignes) $lignes = preg_split("#\r\n|\n\r|\n|\r#", $lignes);
 			else $lignes = array();
 			$resultat = array();
@@ -16,14 +16,14 @@ class Liens extends Fonctionnalite {
 				$ligne = explode("=", $ligne, 2);
 				$resultat[$ligne[0]] = $ligne[1];
 			}
-			$objDossier->liens = $resultat;
+			$objDirectory->liens = $resultat;
 		}
-		return $objDossier->liens;
+		return $objDirectory->liens;
 	}
-	static public function html_form($objDossier) {
+	static public function html_form($objDirectory) {
 		$nomChamp = static::$nomChamp;
 		$val = array();
-		foreach ($objDossier->liens as $etiquette=>$url) {
+		foreach ($objDirectory->liens as $etiquette=>$url) {
 			$val[] = $etiquette."=".$url;
 		}
 		$val = implode("\r\n", $val);

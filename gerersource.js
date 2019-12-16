@@ -72,7 +72,7 @@ Gerer = (function(self) {
 			return false;
 		}
 		var params = "action=sauvegarder";
-		params += "&dossier="+encodeURIComponent(this.dossier.value)+"";
+		params += "&directory="+encodeURIComponent(this.directory.value)+"";
 		params += "&fichier="+encodeURIComponent(this.fichier.value)+"";
 		if (this.suffixe) params += "&suffixe="+encodeURIComponent(this.suffixe.value)+"";
 		params += "&texte="+encodeURIComponent(this.texte.value)+"";

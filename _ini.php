@@ -12,7 +12,7 @@
   ),
   // Booléen. Doit-on afficher la source?
   'source' => false,
-  // Booléen. Le dossier est-il visible dans la liste? Il reste tout de même accessible.
+  // Booléen. Le directory est-il visible dans la liste? Il reste tout de même accessible.
   'visible' => false,
   // Booléen. Y a-t-il des fichiers à télécharger?
   'fichiers' => false,

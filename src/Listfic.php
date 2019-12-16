@@ -11,7 +11,7 @@
 namespace Listfic;
 class Listfic {
 	public $domaine = "";
-	public $dossiers = array();
+	public $directories = array();
 	public $arbo = array();
 	public $admin = false;
 	static public $modeAjax = true;
@@ -21,7 +21,7 @@ class Listfic {
 	static public $exclusions = array('^_', '_$', '^\.', 'theophile', 'nbproject', 'fontes', 'images');
 	public function __construct($domaine=".") {
 			$this->domaine = $domaine;
-			$this->prendreDossiers();
+			$this->prendreDirectories();
 			$this->arbo = $this->trierArbo($this->creerArbo());
 	}
 	/** Est exécuté au chargement */
@@ -29,7 +29,7 @@ class Listfic {
 		static::$page = basename($_SERVER['PHP_SELF']);
 	}
 	/**
-	 * Retourne true si l'e nom de dossier envoyé n'ect pas exclu'usager est administrateur
+	 * Retourne true si l'e nom de directory envoyé n'ect pas exclu'usager est administrateur
 	 * @param string $nom
 	 * @return boolean
 	 */
@@ -40,7 +40,7 @@ class Listfic {
 		return true;
 	}
 	/**
-	 * Retourne true si le nom de dossier envoyé n'ect pas exclu
+	 * Retourne true si le nom de directory envoyé n'ect pas exclu
 	 * @param string $nom
 	 * @return boolean
 	 */
@@ -51,28 +51,28 @@ class Listfic {
 		return true;
 	}
 	/**
-	 * Récupère les infos des dossiers non exclus
+	 * Récupère les infos des directories non exclus
 	 * @return this
 	 */
-	public function prendreDossiers() {
+	public function prendreDirectories() {
 		$fics = (glob($this->domaine."/*", GLOB_ONLYDIR));
-		foreach ($fics as $dossier) {
-			if ($this->estActif($dossier)) {
-				$this->dossiers[$dossier] = new Dossier($dossier);
+		foreach ($fics as $directory) {
+			if ($this->estActif($directory)) {
+				$this->directories[$directory] = new Directory($directory);
 			}
 		}
 		return $this;
 	}
 	/**
-	 * Retourne les dossiers sous forme de tablbeaus imbriqués avec comme clé, la catégorie
+	 * Retourne les directories sous forme de tablbeaus imbriqués avec comme clé, la catégorie
 	 * @param type $tout Si faux, on filtre les résultats
 	 * @return array
 	 */
 	public function creerArbo($tout=false) {
 		$resultat = array();
-		foreach($this->dossiers as $chemin=>$dossier){
-			if ($dossier->visible || static::estAdmin()) {
-				$categorie = $dossier->categorie;
+		foreach($this->directories as $chemin=>$directory){
+			if ($directory->visible || static::estAdmin()) {
+				$categorie = $directory->categorie;
 				$categories = explode("/", $categorie);
 				$ptr = &$resultat;
 				while (count($categories)) {
@@ -80,7 +80,7 @@ class Listfic {
 					if (!isset($ptr[$categorie])) $ptr[$categorie] = array();
 					$ptr = &$ptr[$categorie];
 				}
-				$ptr[$chemin] = $dossier;
+				$ptr[$chemin] = $directory;
 			}
 		}
 		return $resultat;
@@ -119,9 +119,9 @@ class Listfic {
 		return $nouveau;
 	}
 	public function categories() {
-		$resultat = array_map(function ($dossier) {
-			return $dossier->categorie;
-		}, $this->dossiers);
+		$resultat = array_map(function ($directory) {
+			return $directory->categorie;
+		}, $this->directories);
 		return true;
 	}
 	/**
@@ -170,7 +170,7 @@ class Listfic {
 #	static public function creerAffichageArbo($arbo, $admin=false) {
 #		$resultat = '<ul class="projets">';
 #		foreach($arbo as $cle=>&$val) {
-#			if (is_a($val, '\Listfic\Dossier')) {	// C'est un dossier
+#			if (is_a($val, '\Listfic\Directory')) {	// C'est un directory
 #				$resultat .= '<li id="projet-'.$val->url.'" class="projet">'.$val->ligneProjet($admin).'</li>';
 #			}else{
 #				$resultat .= '<li><span>'.$cle.'</span>';
@@ -197,20 +197,20 @@ class Listfic {
 		$keys = array_keys($data);
 		$values = array_values($data);
 		if (count($data) === 1 && $values[0] === "") {
-			$data = Dossier::decoder($keys[0]);
+			$data = Directory::decoder($keys[0]);
 			if (!$data) {
 				return;
 			}
 			$type = $data[0];
-			$nomDossier = $data[1];
+			$nomDirectory = $data[1];
 		} else {
 			$type = $keys[0];
-			$nomDossier = $values[0];
+			$nomDirectory = $values[0];
 		}
-		$nomFic = $nomDossier.'.zip';
-//		var_dump($data, $keys, $values, $type, $nomDossier, $nomFic);
+		$nomFic = $nomDirectory.'.zip';
+//		var_dump($data, $keys, $values, $type, $nomDirectory, $nomFic);
 //		exit;
-		$path = static::recupererFic($type, $nomDossier, $nomFic);
+		$path = static::recupererFic($type, $nomDirectory, $nomFic);
 		if ($path) {
 			$nomFinal = basename($path);
 			header("content-type:application/zip");
@@ -219,31 +219,31 @@ class Listfic {
 			exit;
 		}
 	}
-	static public function recupererFic($type, $nomDossier, $nomFic) {
+	static public function recupererFic($type, $nomDirectory, $nomFic) {
 		try {
-			$dossier = new Dossier($nomDossier);
+			$directory = new Directory($nomDirectory);
 		} catch (\Exception $exc) {
 			exit($exc);
 		}
 		switch ($type) {
 			case 'fichiers': case 'f':
-				$path = $dossier->pathZip();
-				if ($dossier->fichiers && file_exists($path)) {
+				$path = $directory->pathZip();
+				if ($directory->fichiers && file_exists($path)) {
 					return $path;
 				} else {
 					return "";
 				}
 			break;
 			case 'solution': case 's':
-				$path = $dossier->pathZip(Dossier::$suffixe_solution);
-				if ($dossier->solution && file_exists($path)) {
+				$path = $directory->pathZip(Directory::$suffixe_solution);
+				if ($directory->solution && file_exists($path)) {
 					return $path;
 				} else {
 					return "";
 				}
 			break;
 			case 'url': case 'u':
-				$path = $dossier->path.'/'.$nomFic;
+				$path = $directory->path.'/'.$nomFic;
 				if (file_exists($path)) {
 					return $path;
 				} else {
@@ -260,7 +260,7 @@ class Listfic {
 		}
 		static::admission();
 		if (!static::estAdmin()) return '';
-		$reponses = implode('', Dossier::executerFctStatic('admin_gerer'));
+		$reponses = implode('', Directory::executerFctStatic('admin_gerer'));
 		//$finir = false
 			// | $this->admin_gererVisibilite()
 			// | $this->admin_gererFichiers()
@@ -286,48 +286,48 @@ class Listfic {
 	/*public function admin_gererVisibilite() {
 		//Rendre le projet visible
 		if (!isset($_GET['v'])) return false;
-		foreach($_GET['v'] as $dossier=>$etat) {
-			$dossier = $this->domaine."/".$dossier;
-			$objDossier = new Dossier($dossier);
-			if ($etat == 'true') $objDossier->visible = true;
-			else $objDossier->visible = false;
-			$objDossier->mettreIni(true);
+		foreach($_GET['v'] as $directory=>$etat) {
+			$directory = $this->domaine."/".$directory;
+			$objDirectory = new Directory($directory);
+			if ($etat == 'true') $objDirectory->visible = true;
+			else $objDirectory->visible = false;
+			$objDirectory->mettreIni(true);
 		}
 		return true;
 	}*/
 	/*public function admin_gererFichiers() {
 		//Rendre les fichiers de départ visibles
 		if (!isset($_GET['f'])) return false;
-		foreach($_GET['f'] as $dossier=>$etat) {
-			$dossier = $this->domaine."/".$dossier;
-			$objDossier = new Dossier($dossier);
-			$objDossier->fichiers = ($etat == 'true');
-			$objDossier->mettreIni(true);
+		foreach($_GET['f'] as $directory=>$etat) {
+			$directory = $this->domaine."/".$directory;
+			$objDirectory = new Directory($directory);
+			$objDirectory->fichiers = ($etat == 'true');
+			$objDirectory->mettreIni(true);
 		}
 		return true;
 	}*/
 	/*public function admin_gererSolution() {
 		//Rendre la solution visible
 		if (!isset($_GET['s'])) return false;
-		foreach($_GET['s'] as $dossier=>$etat) {
-			$dossier = $this->domaine."/".$dossier;
-			$objDossier = new Dossier($dossier);
-			$objDossier->solution = ($etat == 'true');
-			$objDossier->mettreIni(true);
+		foreach($_GET['s'] as $directory=>$etat) {
+			$directory = $this->domaine."/".$directory;
+			$objDirectory = new Directory($directory);
+			$objDirectory->solution = ($etat == 'true');
+			$objDirectory->mettreIni(true);
 		}
 		return true;
 	}*/
 	public function admin_gererModifier() {
 		if (!isset($_POST['modifier'])) return '';
 		if (isset($_POST['annuler'])) return '';
-		$objDossier = new Dossier($_POST['modifier']);
-		$objDossier->prendreIni($_POST);
-		$ini = $objDossier->creerIni();
+		$objDirectory = new Directory($_POST['modifier']);
+		$objDirectory->prendreIni($_POST);
+		$ini = $objDirectory->creerIni();
 		//$ini = $_POST['ini'];
-		$path = $objDossier->path."/".Dossier::$nomIni."";
+		$path = $objDirectory->path."/".Directory::$nomIni."";
 		unlink($path);
 		file_put_contents($path, $ini);
-		return $objDossier->ligneProjet(true);
+		return $objDirectory->ligneProjet(true);
 	}
 	static public function urlScript($fichier=null) {
 		$script = explode("\\", __FILE__);
@@ -382,9 +382,9 @@ class Listfic {
 	public function admin_affichageLogout(){
 		return '<div><a href="'.basename($_SERVER['PHP_SELF']).'">Quitter l\'administration</a></div>';
 	}
-	public function admin_affichageFormModifier($dossier) {
-		$objDossier = new Dossier($dossier);
-		$form = $objDossier->affichageFormModifier();
+	public function admin_affichageFormModifier($directory) {
+		$objDirectory = new Directory($directory);
+		$form = $objDirectory->affichageFormModifier();
 		return $form;
 	}
 	public function head() {
@@ -408,7 +408,7 @@ class Listfic {
 	static public function creerAffichageArbo($arbo, $admin=false) {
 		$resultat = '<ul class="categorie">';
 		foreach($arbo as $cle=>&$val) {
-			if (is_a($val, '\Listfic\Dossier')) {	// C'est un dossier
+			if (is_a($val, '\Listfic\Directory')) {	// C'est un directory
 				$resultat .= $val->ligneProjet($admin);
 			}else{
 				$resultat .= '<li class="categorie"><span>'.$cle.'</span>';

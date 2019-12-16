@@ -1,6 +1,6 @@
 <?php
-namespace Listfic\Fonctionnalite;
-class DateAjout extends Fonctionnalite {
+namespace Listfic\Functionality;
+class DateAjout extends Functionality {
 	static public $nom = "DateAjout";
 	static public $nomChamp = "dateAjout";
 	static public $etiquette = "Date d'ajout";
