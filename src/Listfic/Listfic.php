@@ -1,30 +1,29 @@
 <?php
-// namespace Listfic;
-// TODO : Ajouter automatiquement la ligne d'affichage de la source
+namespace Listfic;
+// TODO : Ajouter automatiquement la line d'affichage de la source
 // TODO : Permettre d'afficher plusieurs sources (dont les includes)
 // TODO : Laisser le menu même si on ne montre pas la source
 // TODO : Exemples = source automatique
 // TODO : Exercices et travaux = source jamais (A moins d'une mention dans le ini)
-// TODO : Un proxy qui donne les fichiers au besoin (et qui peut les zipper...)
-// error_reporting(E_ALL);
-// $liste = new Listfic();
-// echo $liste->affichageArbo();
+// TODO : Un proxy qui donne les files au besoin (et qui peut les zipper...)
+error_reporting(E_ALL);
 
 use Listfic\Directory;
 class Listfic {
+	use \Listfic\Html;
 	public $domain = "";
-	public $directories = array();
-	public $arbo = array();
+	public $directories = [];
+	public $arbo = [];
 	public $admin = false;
 	static public $ajaxMode = true;
 	static public $page = "";
-	static public $ini = array();
-	static public $catbase = array("Exemples","Exercices","Travaux");
-	static public $exclusions = array('^_', '_$', '^\.', 'theophile', 'nbproject', 'fontes', 'images');
+	static public $ini = [];
+	static public $catbase = array("Exemples","Exercices","Travaux");	//TODO Localize
+	static public $exclusions = array('^_', '_$', '^\.', 'theophile', 'nbproject', 'fontes', 'images');	//TODO Put in config file
 	public function __construct($domain=".") {
-			$this->domain = $domain;
-			$this->getDirectories();
-			$this->arbo = $this->arbo_sort($this->arbo());
+		$this->domain = $domain;
+		$this->directories = $this->getDirectories();
+		$this->arbo = $this->arbo_sort($this->arbo());
 	}
 	/** Est exécuté au chargement */
 	static public function init() {
@@ -46,43 +45,47 @@ class Listfic {
 	 * @param string $name
 	 * @return boolean
 	 */
-	public function isActive($name) {
+	public function isExcluded($name) {
 		$name = basename($name);
 		$exclusion = implode('|', static::$exclusions);
-		if (preg_match("#$exclusion#", $name)) return false;
-		return true;
+		if (preg_match("#$exclusion#", $name)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	/**
 	 * Récupère les infos des directories non exclus
-	 * @return this
+	 * @return Directory[]
 	 */
 	public function getDirectories() {
-		$files = (glob($this->domain."/*", GLOB_ONLYDIR));
-		foreach ($files as $directory) {
-			if ($this->isActive($directory)) {
-				$this->directories[$directory] = new Directory($directory);
+		$result = [];
+		$directories = (glob($this->domain."/*", GLOB_ONLYDIR));
+		foreach ($directories as $directory) {
+			if (!$this->isExcluded($directory)) {
+				$result[$directory] = new Directory($directory);
 			}
 		}
-		return $this;
+		return $result;
 	}
 	/**
 	 * Retourne les directories sous forme de tablbeaus imbriqués avec comme clé, la catégorie
 	 * @param type $all Si faux, on filtre les résultats
 	 * @return array
 	 */
-	public function arbo($all=false) {
+	public function arbo($all = false) {
 		$result = array();
-		foreach($this->directories as $chemin=>$directory){
-			if (!empty($directory->visible) || static::isAdmin()) {
-				$categorie = $directory->categorie;
-				$categories = explode("/", $categorie);
+		foreach($this->directories as $path=>$directory){
+			if ($all || $directory->visible || static::isAdmin()) {
+				$category = $directory->category;
+				$categories = explode("/", $category);
 				$ptr = &$result;
 				while (count($categories)) {
-					$categorie = array_shift($categories);
-					if (!isset($ptr[$categorie])) $ptr[$categorie] = array();
-					$ptr = &$ptr[$categorie];
+					$category = array_shift($categories);
+					if (!isset($ptr[$category])) $ptr[$category] = array();
+					$ptr = &$ptr[$category];
 				}
-				$ptr[$chemin] = $directory;
+				$ptr[$path] = $directory;
 			}
 		}
 		return $result;
@@ -94,7 +97,6 @@ class Listfic {
 			if (isset($arbo[$cat])) {
 				$temp = $arbo[$cat];
 				unset($arbo[$cat]);
-				//uasort($temp, "static::comparerTitres");
 				$temp = $this->arbo_sort($temp);
 				$nouveau[$cat] = $temp;
 			}
@@ -104,14 +106,14 @@ class Listfic {
 			$autres = $nouveau['Autres']; // Arranger???
 			unset($nouveau['Autres']);
 		}
-		// On fait le tri des éléments restant (titre et catégorie)
+		// On fait le tri des éléments restant (title et catégorie)
 		$triNouveau = array();	// Variable qui sert à déterminer l'ordre de tri
 		foreach($arbo as $cat=>&$value){
 			if (is_array($value)) {
 				$triNouveau[] = strtolower($cat);
 				$value = static::arbo_sort($value);
 			}else{
-				$triNouveau[] = strtolower($value->prefix.$value->titre.time());
+				$triNouveau[] = strtolower($value->prefix.$value->title.time());
 			}
 		}
 		array_multisort($triNouveau, $arbo);
@@ -122,23 +124,9 @@ class Listfic {
 	}
 	public function categories() {
 		$result = array_map(function ($directory) {
-			return $directory->categorie;
+			return $directory->category;
 		}, $this->directories);
 		return true;
-	}
-	/**
-	 * Retourne l'affichage de l'arborescence courante.
-	 * @return string
-	 */
-	public function html_arbo() {
-		$result = '';
-		foreach($this->arbo as $key=>&$val) {
-				$result .= '<article style="page-break-inside: avoid;">';
-				$result .= '<h2>'.$key.'</h2>';
-				$result .= static::html_arboBranch($val, static::isAdmin());
-				$result .= '</article>';
-		}
-		return $result;
 	}
 	/**
 	 * Retourne le chemin relatif d'un fichier vers un autre
@@ -146,43 +134,23 @@ class Listfic {
 	 * @param string $a - Le path d'arrivé. ex.: a/d/e.php
 	 * @return string Le chemin relatif. ex.: ../d/e.php
 	 */
-	static public function relative($de, $a){
-		$de = realpath($de);
-		$a = realpath($a);
-		// echo $de."--ª".$a."<br/>";
-		if (!is_dir($de)) $de = dirname($de);
-		$de = str_replace("\\", "/", $de);
-		$a = str_replace("\\", "/", $a);
-		$de = explode("/", $de);
-		$a = explode("/", $a);
-		while(count($de) && count($a) && $de[0]==$a[0]) {
-			array_shift($de);
-			array_shift($a);
+	static public function relative($from, $to){
+		$from = realpath($from);
+		$to = realpath($to);
+		if (!is_dir($from)) $from = dirname($from);
+		$from = str_replace("\\", "/", $from);
+		$to = str_replace("\\", "/", $to);
+		$from = explode("/", $from);
+		$to = explode("/", $to);
+		while(count($from) && count($to) && $from[0]==$to[0]) {
+			array_shift($from);
+			array_shift($to);
 		}
 		$path = "";
-		$path .= str_repeat("../", count($de));
-		$path .= implode("/", $a);
+		$path .= str_repeat("../", count($from));
+		$path .= implode("/", $to);
 		return $path;
 	}
-	/** Devrait être surchargé
-	 * Retourne une liste HTML des éléments de l'arborescence envoyée
-	 * @param array $arbo
-	 * @return string
-	 */
-#	static public function creerAffichageArbo($arbo, $admin=false) {
-#		$result = '<ul class="projets">';
-#		foreach($arbo as $key=>&$val) {
-#			if (is_a($val, '\Listfic\Directory')) {	// C'est un directory
-#				$result .= '<li id="projet-'.$val->url.'" class="projet">'.$val->ligneProjet($admin).'</li>';
-#			}else{
-#				$result .= '<li><span>'.$key.'</span>';
-#				$result .= static::creerAffichageArbo($val, $admin);
-#				$result .= '</li>';
-#			}
-#		}
-#		$result .= "</ul>";
-#		return $result;
-#	}
 	//////////////////////////////////////////////////////////////////////////////
 	// ADMINISTRATION ////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -204,15 +172,15 @@ class Listfic {
 				return;
 			}
 			$type = $data[0];
-			$nomDirectory = $data[1];
+			$directoryName = $data[1];
 		} else {
 			$type = $keys[0];
-			$nomDirectory = $values[0];
+			$directoryName = $values[0];
 		}
-		$nomFic = $nomDirectory.'.zip';
-//		var_dump($data, $keys, $values, $type, $nomDirectory, $nomFic);
+		$nomFic = $directoryName.'.zip';
+//		var_dump($data, $keys, $values, $type, $directoryName, $nomFic);
 //		exit;
-		$path = static::getFile($type, $nomDirectory, $nomFic);
+		$path = static::getFile($type, $directoryName, $nomFic);
 		if ($path) {
 			$nomFinal = basename($path);
 			header("content-type:application/zip");
@@ -221,16 +189,16 @@ class Listfic {
 			exit;
 		}
 	}
-	static public function getFile($type, $nomDirectory, $nomFic) {
+	static public function getFile($type, $directoryName, $nomFic) {
 		try {
-			$directory = new Directory($nomDirectory);
+			$directory = new Directory($directoryName);
 		} catch (\Exception $exc) {
 			exit($exc);
 		}
 		switch ($type) {
-			case 'fichiers': case 'f':
+			case 'files': case 'f':
 				$path = $directory->path_zip();
-				if ($directory->fichiers && file_exists($path)) {
+				if ($directory->files && file_exists($path)) {
 					return $path;
 				} else {
 					return "";
@@ -262,7 +230,7 @@ class Listfic {
 		}
 		static::login();
 		if (!static::isAdmin()) return '';
-		$reponses = implode('', Directory::executerStaticFunction('admin_gerer'));
+		$reponses = implode('', Directory::executeStaticFunction('admin_gerer'));
 		//$finir = false
 			// | $this->admin_gererVisibilite()
 			// | $this->admin_gererFichiers()
@@ -298,12 +266,12 @@ class Listfic {
 		return true;
 	}*/
 	/*public function admin_gererFichiers() {
-		//Rendre les fichiers de départ visibles
+		//Rendre les files de départ visibles
 		if (!isset($_GET['f'])) return false;
 		foreach($_GET['f'] as $directory=>$etat) {
 			$directory = $this->domaine."/".$directory;
 			$directoryObject = new Directory($directory);
-			$directoryObject->fichiers = ($etat == 'true');
+			$directoryObject->files = ($etat == 'true');
 			$directoryObject->mettreIni(true);
 		}
 		return true;
@@ -359,67 +327,11 @@ class Listfic {
 			}
 		}
 	}
-	public function admin_html(){
-		if (!isset($_GET['admin'])) return '';
-		$result = '';
-		if (!$this->admin) {
-			return $this->admin_html_loginForm();
-		} else {
-			$result .= $this->admin_html_logout ();
-		}
-		echo $_GET['a'];// TOFIX
-		if (isset($_GET['a'])) {
-			$result .= $this->admin_html_adminForm($_GET['a']);
-		}
-		return $result;
-	}
-	public function admin_html_loginForm(){
-		$result = '<form action="" method="post">';
-		$result .= '<input name="password" type="password" placeholder="Mot de passe" />';
-		$result .= '<input name="login" type="hidden" />';
-		$result .= '<input type="submit" />';
-		$result .= '</form>';
-		return $result;
-	}
-	public function admin_html_logout(){
-		return '<div><a href="'.basename($_SERVER['PHP_SELF']).'">Quitter l\'administration</a></div>';
-	}
-	public function admin_html_adminForm($directory) {
-		$directoryObject = new Directory($directory);
-		$form = $directoryObject->html_updateForm();
-		return $form;
-	}
-	public function head() {
-		$result = '';
-		if (static::$ajaxMode) {
-			$result .= '<script src="'.self::urlScript("listfic.js").'"></script>';
-		}
-		return $result;
-	}
 	static public function login(){
 		if (isset($_POST['login']) && $_POST['password']="elefan") {
 			$_SESSION['admin'] = true;
 			header("location:".static::$page."?admin"); exit;
 		}
-	}
-	/** AJUSTER
-	 * Retourne une liste HTML des éléments de l'arborescence envoyée
-	 * @param array $arbo
-	 * @return string
-	 */
-	static public function html_arboBranch($arbo, $admin=false) {
-		$result = '<ul class="categorie">';
-		foreach($arbo as $key=>&$val) {
-			if (is_a($val, '\Listfic\Directory')) {	// C'est un directory
-				$result .= $val->html_projectLine($admin);
-			}else{
-				$result .= '<li class="categorie"><span>'.$key.'</span>';
-				$result .= static::html_arboBranch($val, $admin);
-				$result .= '</li>';
-			}
-		}
-		$result .= "</ul>";
-		return $result;
 	}
 }
 Listfic::init();

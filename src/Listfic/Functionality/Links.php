@@ -2,28 +2,28 @@
 namespace Listfic\Functionality;
 class Links extends Functionality {
 	static public $name = "Liens";
-	static public $fieldName = "liens";
+	static public $fieldName = "links";
 	static public $label = "Liens";
-	static public $description = 'Un tableau de liens (étiquette=>url) ou une série de lignes (étiquette=url)';
-	static public function getIni($directoryObject, $ini){
-		parent::getIni($directoryObject, $ini);
-		if (!is_array($directoryObject->liens)) {
-			$lignes = trim($directoryObject->liens);
-			if ($lignes) $lignes = preg_split("#\r\n|\n\r|\n|\r#", $lignes);
-			else $lignes = array();
+	static public $description = 'Un tableau de links (étiquette=>url) ou une série de lines (étiquette=url)';
+	static public function ini_get($directoryObject, $ini){
+		parent::ini_get($directoryObject, $ini);
+		if (!is_array($directoryObject->links)) {
+			$lines = trim($directoryObject->links);
+			if ($lines) $lines = preg_split("#\r\n|\n\r|\n|\r#", $lines);
+			else $lines = array();
 			$result = array();
-			foreach ($lignes as $ligne) {
-				$ligne = explode("=", $ligne, 2);
-				$result[$ligne[0]] = $ligne[1];
+			foreach ($lines as $line) {
+				$line = explode("=", $line, 2);
+				$result[$line[0]] = $line[1];
 			}
-			$directoryObject->liens = $result;
+			$directoryObject->links = $result;
 		}
-		return $directoryObject->liens;
+		return $directoryObject->links;
 	}
 	static public function html_form($directoryObject) {
 		$fieldName = static::$fieldName;
 		$val = array();
-		foreach ($directoryObject->liens as $label=>$url) {
+		foreach ($directoryObject->links as $label=>$url) {
 			$val[] = $label."=".$url;
 		}
 		$val = implode("\r\n", $val);

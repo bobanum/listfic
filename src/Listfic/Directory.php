@@ -1,27 +1,26 @@
 <?php
 /*TODO Enlever la notion de flag*/
 namespace Listfic;
-use Listfic;
 use Listfic\Functionality\Files;
 use Listfic\Functionality\Solution;
 use ZipArchive;
 class Directory {
 	/** @var string - Le nom du petit fichier à laisser dans le directory */
 	static public $iniFilename = "_ini.php";
-	/** @var string - Tableau des regexp des fichiers/directories à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
-	static public $zipExclusions = array(/*'soulignementDebut'=>'^_', */'soulignementFin'=>'_$', 'pointDebut'=>'^\.');
+	/** @var string - Tableau des regexp des files/directories à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
+	static public $zipExclusions = array(/*'underscoreStart'=>'^_', */'underscoreEnd'=>'_$', 'dotStart'=>'^\.');
 	static public $labels = array(
-			"fichiers"=>"Fichiers",
+			"files"=>"Files",
 			"solution"=>"Solution",
-			"consignes"=>"Consignes",
+			"directives"=>"Directives",
 	);
 	//TODO Réviser :
 	static public $functionalities = array(
-		'Ini','Titre','Categorie','Prefixe','Liens','Source','Visible',
+		'Ini','Title','Category','Prefix','Links','Source','Visible',
 	);
 	/** @var string Ce qui se trouve juste avant le url pour faire un path absolu. Déterminé au init. */
 	static public $root;
-	/** @var string Le directory dans lequel mettre les fichiers zip. */
+	/** @var string Le directory dans lequel mettre les files zip. */
 	static public $zipPath = "/_zip";
 	static public $solution_suffix = "_solution";
 	static public $files_suffix = "_fichiers";
@@ -36,7 +35,7 @@ class Directory {
 	public $modified = false;
 	// Valeurs par défaut
 	protected $_category = "Autres";
-	protected $_prefixe = "";
+	protected $_prefix = "";
 	protected $_links = array();
 	protected $_title = "";
 	protected $_source = false;
@@ -64,6 +63,7 @@ class Directory {
 	 * @param type $value
 	 * @return Directory
 	 * @throws Exception
+	 * @todo Revise __get and __set
 	 */
 	public function __set($name, $value) {
 		if (method_exists($this, $name)) {
@@ -91,7 +91,7 @@ class Directory {
 		}
 		$name = '_'.$name;
 		if (!property_exists($this, $name)) {
-			throw new \Exception('Propriété "'.substr($name,1).'" inconnue');
+			throw new \Exception('Property "'.substr($name,1).'" unknown');
 		}
 		return $this->$name;
 	}
@@ -151,7 +151,7 @@ class Directory {
 		if (func_num_args()== 0) {
 			return $this->path."/".self::$iniFilename;
 		} else {
-			throw new \Exception("Propriété 'pathFicIni' en lecture seule");
+			throw new \Exception("Propriété 'path_iniFile' en lecture seule");
 		}
 	}
 	// METHODS //////////////////////////////////////////////////////////////////
@@ -168,9 +168,12 @@ class Directory {
 		$result = array();
 		foreach (self::$functionalities as $functionality) {
 			$functionality = "Listfic\\Functionality\\$functionality";
+			$test = class_exists("$functionality");
 			if (method_exists($functionality, $methodName)) {
 				$reponse = call_user_func_array(array($functionality, $methodName), $params);
-				if ($reponse) $result[$functionality] = $reponse;
+				if ($reponse) {
+					$result[$functionality] = $reponse;
+				}
 			}
 		}
 		return $result;
@@ -180,7 +183,7 @@ class Directory {
 	 * @param string $method
 	 * @note La fonction prend des paramètres multiples
 	 */
-	static public function executerStaticFunction($method) {
+	static public function executeStaticFunction($method) {
 		$params = array();
 		for ($i=1; $i<func_num_args(); $i++) {
 			array_push($params, func_get_arg($i));
@@ -204,14 +207,14 @@ class Directory {
 	 */
 	public function ini_get($ini=null) {
 		if (is_null($ini)) {
-			$pathFicIni = $this->pathFicIni;
+			$path_iniFile = $this->path_iniFile;
 
 			$ini = array();
-			if (file_exists($pathFicIni)) {
-				include($pathFicIni);
+			if (file_exists($path_iniFile)) {
+				include($path_iniFile);
 			}
 		}
-		$this->executeFunction('prendreIni', $ini);
+		$this->executeFunction('ini_get', $ini);
 		return $this;
 	}
 	public function ini_create() {
@@ -228,9 +231,9 @@ class Directory {
 		if ($this->modified == false && !$forcer) {
 			return $this;
 		}
-		$pathFicIni = $this->pathFicIni;
+		$path_iniFile = $this->path_iniFile;
 		$ini = $this->ini_create();
-		file_put_contents($pathFicIni, $ini);
+		file_put_contents($path_iniFile, $ini);
 		return $this;
 	}
 	/**
@@ -285,11 +288,11 @@ class Directory {
 	 */
 	public function adjustZip($flags=0) {
 		$suffix = ($flags & self::PATH_SOLUTION) ? self::$solution_suffix : "";
-		$pathFic = $this->path_file($suffix);
+		$pathFile = $this->path_file($suffix);
 		$pathZip = $this->path_zip($suffix);
 		//s'il n'y a pas de ini_fichiers, on vérifie s'il y a un directory du meme nom ou un zip
-		if (file_exists($pathZip) && file_exists($pathFic)) {
-			if (filemtime($pathZip)<filemtime($pathFic)) {
+		if (file_exists($pathZip) && file_exists($pathFile)) {
+			if (filemtime($pathZip)<filemtime($pathFile)) {
 				unlink($pathZip);	// Le zip est désuet
 			} else {
 				return true;
@@ -300,7 +303,7 @@ class Directory {
 			return true;
 		}
 		// Il n'y a que le directory... on zippe;
-		if (file_exists($pathFic)){
+		if (file_exists($pathFile)){
 			$this->zip_SubDirectory($suffix);
 			return true;
 		}
@@ -312,14 +315,14 @@ class Directory {
 	 */
 	public function adjustSubDirectory($flags=0) {
 		$suffix = ($flags & self::PATH_SOLUTION) ? self::$solution_suffix : "";
-		$pathFic = $this->path_file($suffix);
+		$pathFile = $this->path_file($suffix);
 		$pathZip = $this->path_zip($suffix);
 		// Il n'y a que le zip, on ne crée pas de directory
 		if (file_exists($pathZip)) {
 			return true;
 		}
 		// Il n'y a que le directory... on zippe;
-		if (file_exists($pathFic)) {
+		if (file_exists($pathFile)) {
 			return true;
 		} else {
 			$this->subDirectory($suffix);
@@ -332,10 +335,10 @@ class Directory {
 	 * @param boolean $supprimerOriginal
 	 */
 	public function zip_SubDirectory($suffix, $supprimerOriginal=false) {
-		$pathFic = $this->path_file($suffix);
+		$pathFile = $this->path_file($suffix);
 		$pathZip = $this->path_zip($suffix);
 		$this->adjustDirectory(dirname($pathZip));
-		$path = realpath($pathFic);
+		$path = realpath($pathFile);
 		$element = basename($this->path);
 		if ($suffix && $suffix != static::$files_suffix) {
 			$element .= $suffix;
@@ -347,7 +350,7 @@ class Directory {
 			$this->zip_add($zip, $path, $element);
 		}
 		if ($supprimerOriginal === true) {
-			$this->deleteFile($pathFic);
+			$this->deleteFile($pathFile);
 		}
 	}
 	/**
@@ -500,7 +503,7 @@ class Directory {
 		$result .= $this->createLinksButtons();
 		$result .= '<a target="_blank" href="'.$this->url.'/">';
 		$result .= ($this->prefix) ? $this->prefix. " : " : '';
-		$result .= '<b>'.$this->titre.'</b>';
+		$result .= '<b>'.$this->title.'</b>';
 		if ($this->source) {
 			$result .= '<span class="source_visible" title="Code source inclus dans la page">&#9873;</span>';
 		}
@@ -513,14 +516,14 @@ class Directory {
 		if (!file_exists($this->path."/".$name)) {
 			return "";
 		}
-		return '<div class="ecran"><img src="'.$this->url.'/'.$name.'" alt="'.$this->titre.'" /></div>';
+		return '<div class="ecran"><img src="'.$this->url.'/'.$name.'" alt="'.$this->title.'" /></div>';
 	}
 	public function html_iframe() {
 		return false;	//TODO Vérifier la pertinence
 	}
 	public function html_updateForm() {
-		$pathFicIni = $this->path_iniFile();
-		$ini = file_get_contents ($pathFicIni);
+		$path_iniFile = $this->path_iniFile();
+		$ini = file_get_contents ($path_iniFile);
 		$form = '';
 		$form .= '<div id="form" style="position:fixed; left:0; top:0; right:0; bottom:0; background-color:rgba(0,0,0,.5);z-index:2000; line-height:2em;">';
 		$form .= '<form id="modifier" method="post" action="?admin&amp;ajax" style="width:800px; margin:0 auto; background-color:white; padding:2em; color:black; margin-top:2em;box-shadow:0 0 1em;">';
@@ -534,7 +537,7 @@ class Directory {
 	}
 	public function html_fileLink($name, $extensions=["htm","html","php"]) {
 		$label = self::$labels[$name];
-		if (isset($this->liens[$label])) {
+		if (isset($this->links[$label])) {
 			return "";
 		}
 		foreach ($extensions as $extension) {
@@ -547,44 +550,44 @@ class Directory {
 		return "";
 	}
 	/**
-	 * Retourne une liste de liens html associés au directory
-	 * @return array La liste de liens
+	 * Retourne une liste de links html associés au directory
+	 * @return array La liste de links
 	 */
 	public function createLinks() {
-		//TODO Vérifier la précéance entre les liens ds ini et la présence du fichier. Présemtement, le fichier l'emporte
-		$liens = [];
-		// Lien CONSIGNES
-		$lien = $this->html_fileLink("consignes");
-		if ($lien) {
-			$liens[] = $lien;
+		//TODO Vérifier la précéance entre les links ds ini et la présence du fichier. Présemtement, le fichier l'emporte
+		$links = [];
+		// Link DIRECTIVES
+		$link = $this->html_fileLink("directives");
+		if ($link) {
+			$links[] = $link;
 		}
-		// Lien FICHIERS
+		// Link FICHIERS
 		$label = Files::$label;
-		if (!isset($this->liens[$label]) && ($lien = Files::html_lien($this))!="") {
-			$liens[] = $lien;
+		if (!isset($this->links[$label]) && ($link = Files::html_lien($this))!="") {
+			$links[] = $link;
 		}
-		// Lien Solution
+		// Link Solution
 		$label = Solution::$label;
-		if (!isset($this->liens[$label]) && ($lien = Solution::html_lien($this))!="") {
-			$liens[] = $lien;
+		if (!isset($this->links[$label]) && ($link = Solution::html_lien($this))!="") {
+			$links[] = $link;
 		}
-		// Autres liens
-		foreach ($this->liens as $label=>$adresse) {
-			// C'est un lien absolu : on ne vérifie pas la présence
+		// Autres links
+		foreach ($this->links as $label=>$adresse) {
+			// C'est un link absolu : on ne vérifie pas la présence
 			if (preg_match('#^/|^[a-z+]*:\/\/#', $adresse)) {
-				$liens[] = '<a href="'.$adresse.'" title="'.$label.'"></a>';
+				$links[] = '<a href="'.$adresse.'" title="'.$label.'"></a>';
 			} else {
 				// $path = $this->path.'/'.$this->url;
 				$url = $this->url.'/'.$adresse;
 				//if (file_exists($path))
-					$liens[] = '<a href="'.$url.'" title="'.$label.'"></a>';
+					$links[] = '<a href="'.$url.'" title="'.$label.'"></a>';
 			}
 		}
-		return $liens;
+		return $links;
 	}
 	public function link_files($flags=0) {
 		// Lien FICHIERS
-		$type = ($flags & self::PATH_SOLUTION) ? "solution" : "fichiers";
+		$type = ($flags & self::PATH_SOLUTION) ? "solution" : "files";
 		$label = self::$labels[$type];
 		$data[$type] = $this->url;
 		return self::link_download($label, $data, $type);
@@ -679,7 +682,7 @@ class Directory {
 	//protected $_description = "";
 	static public function init() {
 		// Pas besoin d'appeler le parent puisque le init du parent est déjà appelé
-		self::$functionalities[] = 'Fichiers';
+		self::$functionalities[] = 'Files';
 		self::$functionalities[] = 'Solution';
 		self::$root = realpath('.');
 	}
@@ -699,12 +702,12 @@ class Directory {
 		} else {
 			$result .= '<a class="visibilite toggle off" href="?admin'.$ajax.'&amp;v'.$commande.'=true">Afficher le projet</a>';
 		}
-		if ($this->fichiers) {
-			$result .= '<a class="fichiers toggle on" href="?admin'.$ajax.'&amp;f'.$commande.'=false">Retirer le directory de départ</a>';
+		if ($this->files) {
+			$result .= '<a class="files toggle on" href="?admin'.$ajax.'&amp;f'.$commande.'=false">Retirer le directory de départ</a>';
 		} else if (file_exists($this->path_file())||file_exists($this->path_zip())) {
-			$result .= '<a class="fichiers toggle off" href="?admin'.$ajax.'&amp;f'.$commande.'=true">Publier le directory de départ</a>';
+			$result .= '<a class="files toggle off" href="?admin'.$ajax.'&amp;f'.$commande.'=true">Publier le directory de départ</a>';
 		} else {
-			$result .= '<a class="fichiers toggle off" href="?admin'.$ajax.'&amp;f'.$commande.'=true">Créer un directory de départ</a>';
+			$result .= '<a class="files toggle off" href="?admin'.$ajax.'&amp;f'.$commande.'=true">Créer un directory de départ</a>';
 		}
 		if ($this->solution) {
 			$result .= '<a class="solution toggle on" href="?admin'.$ajax.'&amp;s'.$commande.'=false">Retirer le directory de solution</a>';
@@ -717,14 +720,14 @@ class Directory {
 		return $result;
 	}
 	/** AJUSTER
-	 * Retourne une liste de liens html associés au directory
-	 * @return string La liste de liens
+	 * Retourne une liste de links html associés au directory
+	 * @return string La liste de links
 	 */
 	public function createLinksButtons() {
-		$liens = $this->createLinks();
-		$liens = implode("", $liens);
-		if ($liens) {
-			return ' <span class="boutons-liens">'.$liens.'</span>';
+		$links = $this->createLinks();
+		$links = implode("", $links);
+		if ($links) {
+			return ' <span class="buttons-links">'.$links.'</span>';
 		}
 		else return '';
 	}

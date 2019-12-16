@@ -5,7 +5,7 @@ class Solution extends Functionality {
 	static public $name = "Solution";
 	static public $fieldName = "solution";
 	static public $label = "Solution";
-	static public $description = 'Booléen. Y a-t-il des fichiers de solution?';
+	static public $description = 'Booléen. Y a-t-il des files de solution?';
 	static public function admin_process() {
 		//Rendre la solution visible
 		if (!isset($_GET['s'])) {
@@ -32,10 +32,10 @@ class Solution extends Functionality {
 		return $result;
 	}
 	/**
-	 * Retourne un lien HTML vers le zip de la solution en vérifiant toutes les conditions
+	 * Retourne un link HTML vers le zip de la solution en vérifiant toutes les conditions
 	 * @param Directory $directoryObject L'objet directory à analyser
 	 * @return string Le <a> résultant
-	 * @todo Permettre de forcer le lien pour l'admin
+	 * @todo Permettre de forcer le link pour l'admin
 	 */
 	static public function html_lien($directoryObject) {
 		$path = $directoryObject->path_zip("_solution");
@@ -47,14 +47,14 @@ class Solution extends Functionality {
 		if ($condition===false) {
 			return "";
 		}
-		$lien = Directory::link_download($label, array("solution", $directoryObject->url), 'solution');
+		$link = Directory::link_download($label, array("solution", $directoryObject->url), 'solution');
 		if ($condition===true) {
-			return $lien;
+			return $link;
 		}
 		if (($time=strtotime($condition))!==false) {
 			//TODO Réviser l'affichage par date...
 			if ($time<time()) {
-				return $lien;
+				return $link;
 			}
 			else return "";
 		}
@@ -66,8 +66,8 @@ class Solution extends Functionality {
 		}
 		return "";
 	}
-	static public function getIni($directoryObject, $ini){
-		parent::getIni($directoryObject, $ini);
+	static public function ini_get($directoryObject, $ini){
+		parent::ini_get($directoryObject, $ini);
 		if ($directoryObject->solution == true) {
 			$directoryObject->solution = $directoryObject->adjustZip(Directory::PATH_SOLUTION);
 		}

@@ -4,7 +4,7 @@ namespace Listfic;
 //echo __FILE__."<br>";
 //echo $_SERVER['PHP_SELF']."<br>";
 //print_r(debug_backtrace());
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 include_once 'autoload.php';
 if (isset($_GET['data'])) {
 	$data = Directory::decode($_GET['data']);

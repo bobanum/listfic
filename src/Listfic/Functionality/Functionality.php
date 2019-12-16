@@ -13,7 +13,7 @@ class Functionality {
 		$fieldName = static::$fieldName;
 		return $directoryObject->$fieldName;
 	}
-	static public function getIni($directoryObject, $ini){
+	static public function ini_get($directoryObject, $ini){
 		$fieldName = static::$fieldName;
 		if (!$fieldName) return;
 		if (isset($ini[$fieldName])) {
@@ -26,7 +26,7 @@ class Functionality {
 		}
 		return $directoryObject->$fieldName;
 	}
-	static public function creerIni($directoryObject) {
+	static public function ini_create($directoryObject) {
 		$fieldName = static::$fieldName;
 		if (!$fieldName) {
 			return;

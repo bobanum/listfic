@@ -97,7 +97,7 @@ div#ecran form>textarea {
 	height:100%;
 	-moz-box-sizing:border-box;
 }
-div#ecran div.boutons {
+div#ecran div.buttons {
 	position:absolute;
 	bottom: -1.5em;
 	text-align: right;

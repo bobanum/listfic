@@ -1,8 +1,8 @@
 <?php
 namespace Listfic\Functionality;
 class Prefix extends Functionality {
-	static public $name = "Prefixe";
+	static public $name = "Prefix";
 	static public $fieldName = "prefix";
-	static public $label = "Préfixe";
-	static public $description = 'Un préfixe à mettre devant le titre pour le tri "Cours 01 : "';
+	static public $label = "Préfix";
+	static public $description = 'Un préfix à mettre devant le title pour le tri "Cours 01 : "';
 }

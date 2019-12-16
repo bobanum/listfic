@@ -7,7 +7,7 @@ class Admin {
 	const UPDATE = 'Modifier';
 	const DELETEALL = 'Supprimer partout';
 	static public $suffixes = [
-		"Fichiers"=>"", 
+		"Files"=>"", 
 		"Solution"=>"solution", //TOFIX Directory::$suffixe_solution,
 	];
 	static public function fileStatus($file, $suffix="") {
@@ -85,7 +85,7 @@ class Admin {
 		$suffixes = self::$suffixes;
 		foreach (self::$suffixes as $name=>$s) {
 			if (!file_exists("$directory/$directory$s")) {
-				$data = "directory=$directory&suffix=$s&action=creerdirectory";
+				$data = "directory=$directory&suffix=$s&action=createdirectory";
 				$affichage .= '<div><a href="?'.$data.'">Ajouter un directory "'.$name.'"</a></div>';
 				unset($suffixes[$name]);
 			}
@@ -287,7 +287,7 @@ class Admin {
 				$retour = self::html_td($dataUrl, 'absent');
 				echo $retour;
 				exit();
-			} elseif ($action == 'creerdirectory') {
+			} elseif ($action == 'createdirectory') {
 				if (!isset($_GET['directory'])) {
 					self::goto();
 				}
@@ -376,7 +376,7 @@ class Admin {
 		$result .= '<div class="contenu">';
 		$result .= '<form action="gerersource.php" method="post" onsubmit="return Gerer.submitEditeur.apply(this, arguments);">';
 		$result .= '<span class="readonly" onclick="return Gerer.clicreadonly.apply(this,arguments)"></span><textarea name="texte" readonly="readonly">'.htmlspecialchars($txt).'</textarea>';
-		$result .= '<div class="boutons">';
+		$result .= '<div class="buttons">';
 		$result .= '<input type="hidden" name="action" value="sauvegarder"/>';
 		$result .= '<input type="hidden" name="directory" value="'.htmlspecialchars($directory).'"/>';
 		$result .= '<input type="hidden" name="fichier" value="'.htmlspecialchars($file).'"/>';
