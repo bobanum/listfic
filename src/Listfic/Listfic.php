@@ -15,15 +15,15 @@ class Listfic {
 	public $directories = [];
 	public $arbo = [];
 	public $admin = false;
-	static public $ajaxMode = true;
-	static public $page = "";
-	static public $ini = [];
-	static public $catbase = [
+	public $ajaxMode = true;
+	public $page = "";
+	public $ini = [];
+	public $catbase = [
 		"examples" => "Exemples",
 		"exercices" => "Exercices",
 		"homeworks" => "Travaux",
 	];	//TODO Localize
-	static public $exclusions = [
+	public $exclusions = [
 		'^_',
 		'_$',
 		'^\.',
@@ -33,23 +33,26 @@ class Listfic {
 		'images',
 	];	//TODO Put in config file
 	public function __construct($domain=".") {
+		$this->page = basename($_SERVER['PHP_SELF']);
 		$this->domain = $domain;
 		$this->directories = $this->getDirectories();
 		$this->arbo = $this->arbo_sort($this->arbo());
-	}
-	/** Est exécuté au chargement */
-	static public function init() {
-		static::$page = basename($_SERVER['PHP_SELF']);
 	}
 	/**
 	 * Retourne true si l'e nom de directory envoyé n'ect pas exclu'usager est administrateur
 	 * @param string $name
 	 * @return boolean
 	 */
-	static public function isAdmin($checkGet=true) {
-		if (!isset($_SESSION['admin'])) return false;
-		if (!$checkGet) return true;
-		if (!isset($_GET['admin'])) return false;
+	public function isAdmin($checkGet = true) {
+		if (!isset($_SESSION['admin'])) {
+			return false;
+		}
+		if (!$checkGet) {
+			return true;
+		}
+		if (!isset($_GET['admin'])) {
+			return false;
+		}
 		return true;
 	}
 	/**
@@ -59,7 +62,7 @@ class Listfic {
 	 */
 	public function isExcluded($name) {
 		$name = basename($name);
-		$exclusion = implode('|', static::$exclusions);
+		$exclusion = implode('|', $this->exclusions);
 		if (preg_match("#$exclusion#", $name)) {
 			return true;
 		} else {
@@ -88,7 +91,7 @@ class Listfic {
 	public function arbo($all = false) {
 		$result = [];
 		foreach($this->directories as $path=>$directory){
-			if ($all || $directory->visible || static::isAdmin()) {
+			if ($all || $directory->visible || $this->isAdmin()) {
 				$category = $directory->category;
 				$categories = explode("/", $category);
 				$ptr = &$result;
@@ -105,7 +108,7 @@ class Listfic {
 	public function arbo_sort($arbo) {
 		$nouveau = [];
 		// On commence par placer Les éléments standards
-		foreach(static::$catbase as $cat){
+		foreach($this->catbase as $cat){
 			if (isset($arbo[$cat])) {
 				$temp = $arbo[$cat];
 				unset($arbo[$cat]);
@@ -123,7 +126,7 @@ class Listfic {
 		foreach($arbo as $cat=>&$value){
 			if (is_array($value)) {
 				$triNouveau[] = strtolower($cat);
-				$value = static::arbo_sort($value);
+				$value = $this->arbo_sort($value);
 			}else{
 				$triNouveau[] = strtolower($value->prefix.$value->title.time());
 			}
@@ -146,10 +149,12 @@ class Listfic {
 	 * @param string $a - Le path d'arrivé. ex.: a/d/e.php
 	 * @return string Le chemin relatif. ex.: ../d/e.php
 	 */
-	static public function relative($from, $to){
+	public function relative($from, $to){
 		$from = realpath($from);
 		$to = realpath($to);
-		if (!is_dir($from)) $from = dirname($from);
+		if (!is_dir($from)) {
+			$from = dirname($from);
+		}
 		$from = str_replace("\\", "/", $from);
 		$to = str_replace("\\", "/", $to);
 		$from = explode("/", $from);
@@ -169,7 +174,7 @@ class Listfic {
 	/**
 	 * [[Description]]
 	 */
-	static public function processDownload($data=null) {
+	public function processDownload($data=null) {
 		if (is_null($data)) {
 			$data = $_GET;
 		}
@@ -192,7 +197,7 @@ class Listfic {
 		$nomFic = $directoryName.'.zip';
 //		var_dump($data, $keys, $values, $type, $directoryName, $nomFic);
 //		exit;
-		$path = static::getFile($type, $directoryName, $nomFic);
+		$path = $this->getFile($type, $directoryName, $nomFic);
 		if ($path) {
 			$nomFinal = basename($path);
 			header("content-type:application/zip");
@@ -201,7 +206,7 @@ class Listfic {
 			exit;
 		}
 	}
-	static public function getFile($type, $directoryName, $nomFic) {
+	public function getFile($type, $directoryName, $nomFic) {
 		try {
 			$directory = new Directory($directoryName);
 		} catch (\Exception $exc) {
@@ -238,10 +243,13 @@ class Listfic {
 	public function admin_process() {
 		if (isset($_GET['quitter'])) {
 			session_destroy();
-			header("location:".static::$page."");exit();
+			header("location:".$this->page."");exit();
 		}
-		static::login();
-		if (!static::isAdmin()) return '';
+		$this->login();
+		if (!$this->isAdmin()) {
+			return '';
+		}
+
 		$reponses = implode('', Directory::executeStaticFunction('admin_gerer'));
 		//$finir = false
 			// | $this->admin_gererVisibilite()
@@ -271,7 +279,7 @@ class Listfic {
 		foreach($_GET['v'] as $directory=>$etat) {
 			$directory = $this->domaine."/".$directory;
 			$directoryObject = new Directory($directory);
-			if ($etat == 'true') $directoryObject->visible = true;
+			if ($etat === 'true') $directoryObject->visible = true;
 			else $directoryObject->visible = false;
 			$directoryObject->mettreIni(true);
 		}
@@ -283,7 +291,7 @@ class Listfic {
 		foreach($_GET['f'] as $directory=>$etat) {
 			$directory = $this->domaine."/".$directory;
 			$directoryObject = new Directory($directory);
-			$directoryObject->files = ($etat == 'true');
+			$directoryObject->files = ($etat === 'true');
 			$directoryObject->mettreIni(true);
 		}
 		return true;
@@ -294,7 +302,7 @@ class Listfic {
 		foreach($_GET['s'] as $directory=>$etat) {
 			$directory = $this->domaine."/".$directory;
 			$directoryObject = new Directory($directory);
-			$directoryObject->solution = ($etat == 'true');
+			$directoryObject->solution = ($etat === 'true');
 			$directoryObject->mettreIni(true);
 		}
 		return true;
@@ -311,7 +319,7 @@ class Listfic {
 		file_put_contents($path, $ini);
 		return $directoryObject->html_projectLine(true);
 	}
-	static public function urlScript($file=null) {
+	public function urlScript($file = null) {
 		$script = explode("\\", __FILE__);
 		$page = explode("\\", $_SERVER['SCRIPT_FILENAME']);
 		array_pop($script);
@@ -332,18 +340,17 @@ class Listfic {
 		$url = implode("/", $url);
 		return $url;
 	}
-	static public function restrict(){
-		if (!static::isAdmin()) {
+	public function restrict(){
+		if (!$this->isAdmin()) {
 			if (!isset($_GET['l'])){
 				header("location:?l"); exit;
 			}
 		}
 	}
-	static public function login(){
+	public function login(){
 		if (isset($_POST['login']) && $_POST['password']="elefan") {
 			$_SESSION['admin'] = true;
-			header("location:".static::$page."?admin"); exit;
+			header("location:".$this->page."?admin"); exit;
 		}
 	}
 }
-Listfic::init();

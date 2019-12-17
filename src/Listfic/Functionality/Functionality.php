@@ -1,75 +1,105 @@
 <?php
 namespace Listfic\Functionality;
-class Functionality {
-	static public $name = "Functionality";
-	static public $fieldName = "functionality";
-	static public $label = "Functionality";
-	static public $description = "La description de la Functionality";
 
-	static public function html_button($directoryObject){
-		return "";
+use Exception;
+
+class Functionality {
+	protected $name = "Functionality";
+	protected $fieldName = "functionality";
+	protected $label = "Functionality";
+	protected $description = "La description de la Functionality";
+
+	protected $directory = null;
+	protected $_value = null;
+
+	public function __construct($directory, $ini = []) {
+		$this->directory = $directory;
+		$this->ini_get($ini);
 	}
-	static public function html($directoryObject) {
-		$fieldName = static::$fieldName;
-		return $directoryObject->$fieldName;
+	public function __get($name) {
+		$get_name = "get_$name";
+		if (method_exists($this, $get_name)) {
+			return $this->$get_name();
+		}
+		throw new Exception("Undefined property '$name");
 	}
-	static public function ini_get($directoryObject, $ini){
-		$fieldName = static::$fieldName;
+	public function __set($name, $val) {
+		$set_name = "set_$name";
+		if (method_exists($this, $set_name)) {
+			return $this->$set_name($val);
+		}
+		throw new Exception("Undefined property '$name'.");
+	}
+	public function get_value() {
+		return $this->_value;
+	}
+	public function set_value($val) {
+		$this->_value = $val;
+	}
+	public function html_button(){
+		return "<button>Empty</button>";
+	}
+	public function html() {
+		return '<div>'.$this->value.'</div>';
+	}
+	public function ini_get($ini){
+		$fieldName = $this->fieldName;
 		if (!$fieldName) {
 			return;
 		}
 		if (isset($ini[$fieldName])) {
 			$val = $ini[$fieldName];
-			if ($val==='true') {
+			if ($val === 'true') {
 				$val = true;
-			} else if ($val==='false') {
+			} else if ($val === 'false') {
 				$val = false;
 			}
-			$directoryObject->prop('_'.$fieldName, $val);
+			$this->value = $val;
 		} else {
-			$directoryObject->modified = true;
+			$this->directory->modified = true;
 		}
-		return $directoryObject->$fieldName;
+		return $this->value;
 	}
-	static public function ini_create($directoryObject) {
-		$fieldName = static::$fieldName;
+	public function ini_create() {
+		$fieldName = $this->fieldName;
 		if (!$fieldName) {
 			return;
 		}
 		$result = '';
-		$result .= "\t//".static::$description."\r\n";
-		$result .= "\t'".static::$fieldName."'";
-		$result .= " => ".var_export($directoryObject->$fieldName, true).",\r\n";
+		$result .= "\t//".$this->description."\r\n";
+		$result .= "\t'".$this->fieldName."'";
+		$result .= " => ".var_export($this->value, true).",\r\n";
 		return $result;
 	}
-	static public function admin_process() {
-		return "";
+	static protected function admin_process() {
+		return "admin";
 	}
-	static public function html_form($directoryObject) {
-		$fieldName = static::$fieldName;
-		$result = '<input type="text" name="'.$fieldName.'" id="'.$fieldName.'" value="'.$directoryObject->$fieldName.'" size="38" />';
-		return static::html_form_line($result);
+	protected function html_form() {
+		$fieldName = $this->fieldName;
+		$result = '<input type="text" name="'.$fieldName.'" id="'.$fieldName.'" value="'.$this->value.'" size="38" />';
+		$result = static::html_form_line($result);
+		return $result;
 	}
-	static protected function html_form_line($champ){
-		$fieldName = static::$fieldName;
+	protected function html_form_line($field){
+		$fieldName = $this->fieldName;
 		$result = '';
-		$result .= '<div>';
-		$result .= '<label for="'.$fieldName.'">'.static::$label.'</label>';
-		$result .= $champ;
-		$result .= '<span>'.static::$description.'</span>';
+		$result .= '<div class="'.$fieldName.'">';
+		$result .= '<label for="'.$fieldName.'">'.$this->label.'</label>';
+		$result .= $field;
+		$result .= '<span>'.$this->description.'</span>';
 		$result .= '</div>';
 		return $result;
 	}
-	static public function html_select($directoryObject, $choices=[]){
-		$fieldName = static::$fieldName;
+	protected function html_select($choices=[]){
+		$fieldName = $this->fieldName;
 		$result = '';
 		$result .= '<select name="'.$fieldName.'" id="'.$fieldName.'">';
-		$current = $directoryObject->$fieldName;
+		$current = $this->value;
 		if (!is_string($current)) {
-			$current = var_export($current,true);
+			$current = var_export($current, true);
 		}
-		foreach ($choices as $label=>$value) {
-			$selected = ($value===$current) ? ' selected="selected"' : '';
+		foreach ($choices as $label => $value) {
+			$selected = ($value === $current) ? ' selected="selected"' : '';
 			$result .= '<option value="'.$value.'"'.$selected.'>'.$label.'</option>';
 		}
 		$result .= '</select>';

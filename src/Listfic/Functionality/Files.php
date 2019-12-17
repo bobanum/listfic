@@ -2,32 +2,36 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Files extends Functionality {
-	static public $name = "Files";
-	static public $fieldName = "files";
-	static public $label = "Files";
-	static public $description = 'Booléen. Y a-t-il des files à télécharger?';
-	static private $choices = [
+	public $name = "Files";
+	public $fieldName = "files";
+	public $label = "Files";
+	public $description = 'Booléen. Y a-t-il des files à télécharger?';
+	protected $_value = false;
+	private $choices = [
 		'Disponible'=>'true',
 		'Non disponible'=>'false',
 	];
 
 	static public function admin_process() {
 		//Rendre les files de départ visibles
-		if (!isset($_GET['f'])) return false;
+		if (!isset($_GET['f'])) {
+			return false;
+		}
 		$result = '';
-		foreach($_GET['f'] as $directory=>$etat) {
+		foreach($_GET['f'] as $directory=>$status) {
 			$directoryObject = new Directory($directory);
-			$directoryObject->files = ($etat == 'true');
+			$directoryObject->files = ($status === 'true');
 			$directoryObject->ini_put(true);
 			$result .= $directoryObject->html_projectLine(true);
 		}
 		return $result;
 	}
-	static public function html_button($directoryObject){
-		$data = 'f['.urlencode($directoryObject->url).']';
-		if ($directoryObject->files) {
+
+	public function html_button(){
+		$data = 'f['.urlencode($this->directory->url).']';
+		if ($this->value) {
 			$result = '<a class="files toggle on" href="?admin&'.$data.'=false">F</a>';
-		} else if (file_exists($directoryObject->path_file())) {
+		} else if (file_exists($this->directory->path_file())) {
 			$result = '<a class="files toggle off" href="?admin&'.$data.'=true">F</a>';
 		} else {
 			$result = '<a class="files toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
@@ -36,22 +40,21 @@ class Files extends Functionality {
 	}
 	/**
 	 * Retourne un link HTML vers le zip des files en vérifiant toutes les conditions
-	 * @param Directory $directoryObject L'objet directory à analyser
 	 * @return string Le <a> résultant
 	 * @todo Permettre de forcer le link pour l'admin
 	 */
-	static public function html_lien($directoryObject) {
-		$path = $directoryObject->path_file(Directory::$files_suffix);
+	public function html_lien() {
+		$path = $this->directory->path_file(Directory::$files_suffix);
+		$label = $this->label;
+		$condition = $this->value;
 
-		$label = static::$label;
-		$condition = $directoryObject->files;
 		if (!file_exists($path)) {
 			return "";
 		}
 		if ($condition === false) {
 			return "";
 		}
-		$link = Directory::link_download($label, ["files", $directoryObject->url], 'files');
+		$link = Directory::link_download($label, ["files", $this->directory->url], 'files');
 		if ($condition === true) {
 			return $link;
 		}
@@ -64,21 +67,21 @@ class Files extends Functionality {
 			}
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
-		$path = $directoryObject->path.'/'.$condition;
-		$url = $directoryObject->url.'/'.$condition;
+		$path = $this->directory->path.'/'.$condition;
+		$url = $this->directory->url.'/'.$condition;
 		if (file_exists($path)) {
 			return '<a href="'.$url.'">'.$label.'</a>';
 		}
 		return "";
 	}
-	static public function html_form($directoryObject) {
-		$champ = static::html_select($directoryObject, static::$choices);
-		return static::html_form_line($champ);
+	public function html_form() {
+		$champ = $this->html_select($this->choices);
+		return $this->html_form_line($champ);
 	}
-	static public function ini_get($directoryObject, $ini){
-		parent::ini_get($directoryObject, $ini);
-		if ($directoryObject->files == true) {
-				$directoryObject->files = $directoryObject->adjustZip();
+	public function ini_get($ini){
+		parent::ini_get($ini);
+		if ($this->value === true) {
+				$this->value = $this->directory->adjustZip();
 		}
 	}
 }

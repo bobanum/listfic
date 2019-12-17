@@ -12,7 +12,6 @@ namespace Listfic;
 
 use Listfic\Directory;
 trait Html {
-	static public $ajaxMode = true;	//TODO Check inheritance
 	public function html_admin() {
 		if (!isset($_GET['admin'])) {
 			return '';
@@ -28,8 +27,8 @@ trait Html {
 	}
 	public function html_head() {
 		$result = '';
-		if (static::$ajaxMode) {
-			$result .= '<script src="'.self::urlScript("listfic.js").'"></script>';
+		if ($this->ajaxMode) {
+			$result .= '<script src="'.$this->urlScript("listfic.js").'"></script>';
 		}
 		return $result;
 	}
@@ -43,7 +42,7 @@ trait Html {
 			//TODO Anonymize
 			$result .= '<article style="page-break-inside: avoid;">';
 			$result .= '<h2>'.$key.'</h2>';
-			$result .= static::html_arboBranch($val, static::isAdmin());
+			$result .= $this->html_arboBranch($val, $this->isAdmin());
 			$result .= '</article>';
 		}
 		return $result;
@@ -79,7 +78,7 @@ trait Html {
 				$result .= $val->html_projectLine($admin);
 			}else{
 				$result .= '<li class="category"><span>'.$key.'</span>';
-				$result .= static::html_arboBranch($val, $admin);
+				$result .= $this->html_arboBranch($val, $admin);
 				$result .= '</li>';
 			}
 		}

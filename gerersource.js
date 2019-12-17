@@ -18,7 +18,7 @@ Gerer = (function(self) {
 			var reponse = this.responseText;
 			var ct = this.getResponseHeader("Content-type");
 			if (ct.indexOf("html") > 0) {
-				if (reponse.substr(0,3) == "<td") {
+				if (reponse.substr(0,3) === "<td") {
 					var tr = document.createElement("tr");
 					tr.innerHTML = reponse;
 					td.parentNode.replaceChild(tr.firstChild, td);
@@ -66,7 +66,7 @@ Gerer = (function(self) {
 	self.submitEditeur = function(e) {
 		//return true;
 		e.preventDefault();
-		if (this.clickedButton && this.clickedButton.name == "annuler") {
+		if (this.clickedButton && this.clickedButton.name === "annuler") {
 			var ecran = document.getElementById("ecran");
 			ecran.parentNode.removeChild(ecran);
 			return false;

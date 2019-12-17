@@ -6,28 +6,37 @@ use Listfic\Functionality\Solution;
 use ZipArchive;
 class Directory {
 	/** @var string - Le nom du petit fichier à laisser dans le directory */
-	static public $iniFilename = "_ini.php";
+	public $iniFilename = "_ini.php";
 	/** @var string - Tableau des regexp des files/directories à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
-	static public $zipExclusions = [
+	public $zipExclusions = [
 		/*'underscoreStart'=>'^_', */
 		'underscoreEnd'=>'_$', 
 		'dotStart'=>'^\.',
 	];
-	static public $labels = [
+	public $labels = [
 		"files"=>"Files",
 		"solution"=>"Solution",
 		"directives"=>"Directives",
 	];
+
 	//TODO Réviser :
-	static public $functionalities = [
-		'Ini','Title','Category','Prefix','Links','Source','Visible',
+	private $functionalities = [
+		'ini' => null,
+		'title' => null,
+		'category' => null,
+		'prefix' => null,
+		'links' => null,
+		'source' => null,
+		'visible' => null,
+		'files' => null,
+		'solution' => null,
 	];
 	/** @var string Ce qui se trouve juste avant le url pour faire un path absolu. Déterminé au init. */
-	static public $root;
+	private $root;
 	/** @var string Le directory dans lequel mettre les files zip. */
-	static public $zipPath = "/_zip";
-	static public $solution_suffix = "_solution";
-	static public $files_suffix = "_fichiers";
+	public $zipPath = "/_zip";
+	public $solution_suffix = "_solution";
+	public $files_suffix = "_fichiers";
 	const PATH_ZIP = 1;
 	const PATH_RELATIVE = 2;
 	const PATH_SOLUTION = 4;
@@ -38,28 +47,32 @@ class Directory {
 	/** @var boolean Indique si le ini est modifié pour le sauvegarder */
 	public $modified = false;
 	// Valeurs par défaut
-	protected $_category = "Autres";
-	protected $_prefix = "";
-	protected $_links = [];
-	protected $_title = "";
-	protected $_source = false;
-	protected $_visible = false;
-	protected $_files = true;
-	protected $_solution = true;
+	// protected $_category = "Autres";
+	// protected $_prefix = "";
+	// protected $_links = [];
+	// protected $_title = "";
+	// protected $_source = false;
+	// protected $_visible = false;
+	// protected $_files = true;
+	// protected $_solution = true;
 	/**
 	 * Constructeur
 	 * @param type $directory - Le directory à analyser. Pour l'instant doit être la racine du site.
 	 * @throws Exception
 	 */
 	public function __construct($directory=".") {
-		if (!is_dir($directory)) $directory = dirname($directory);
+		$this->root = realpath('.');
+		if (!is_dir($directory)) {
+			$directory = dirname($directory);
+		}
 		$directory = realpath($directory);
 		if (!file_exists($directory)) {
 			throw new \Exception ("Directory '$directory' inexistant");
 		}
 		$this->path = $directory;
 		$this->url = $this->relative_site($directory);
-		$this->ini_get()->ini_put();
+		$this->ini_get();
+		$this->ini_put();
 	}
 	/**
 	 * SETTER. Vérifie si un setgetter existe pour la propriété demandée
@@ -70,18 +83,14 @@ class Directory {
 	 * @todo Revise __get and __set
 	 */
 	public function __set($name, $value) {
-		if (method_exists($this, $name)) {
-			return $this->$name($value);
+		$set_name = "set_$name";
+		if (method_exists($this, $set_name)) {
+			return $this->$set_name($value);
 		}
-		$name = '_'.$name;
-		if (!property_exists($this, $name)) {
-			throw new \Exception('Propriété "'.substr($name,1).'" inconnue');
+		if (array_key_exists($name, $this->functionalities)) {
+			return $this->functionalities[$name]->value = $value;
 		}
-		if ($this->$name != $value) {
-			$this->$name = $value;
-			$this->modified = true;
-		}
-		return $this;
+		throw new \Exception("Unknown property '{$name}'.");
 	}
 	/**
 	 * GETTER.
@@ -90,14 +99,14 @@ class Directory {
 	 * @throws Exception
 	 */
 	public function __get($name) {
-		if (method_exists($this, $name)) {
-			return $this->$name();
+		$get_name = "get_$name";
+		if (method_exists($this, $get_name)) {
+			return $this->$get_name();
 		}
-		$name = '_'.$name;
-		if (!property_exists($this, $name)) {
-			throw new \Exception('Property "'.substr($name,1).'" unknown');
+		if (array_key_exists($name, $this->functionalities)) {
+			return $this->functionalities[$name]->value;
 		}
-		return $this->$name;
+		throw new \Exception("Unknown property '{$name}'.");
 	}
 	/**
 	 * Un hack pour accéder à une propriété avec une fonction pour faire du chaining
@@ -151,9 +160,9 @@ class Directory {
 	 * @return string
 	 * @throws Exception
 	 */
-	public function path_iniFile() {
+	public function get_path_iniFile() {
 		if (func_num_args()== 0) {
-			return $this->path."/".self::$iniFilename;
+			return $this->path."/".$this->iniFilename;
 		} else {
 			throw new \Exception("Propriété 'path_iniFile' en lecture seule");
 		}
@@ -170,7 +179,7 @@ class Directory {
 			array_push($params, func_get_arg($i));
 		}
 		$result = [];
-		foreach (self::$functionalities as $functionality) {
+		foreach ($this->functionalities as $functionality) {
 			$functionality = "Listfic\\Functionality\\$functionality";
 			$test = class_exists("$functionality");
 			if (method_exists($functionality, $methodName)) {
@@ -187,13 +196,13 @@ class Directory {
 	 * @param string $method
 	 * @note La fonction prend des paramètres multiples
 	 */
-	static public function executeStaticFunction($method) {
+	public function executeStaticFunction($method) {
 		$params = [];
 		for ($i=1; $i<func_num_args(); $i++) {
 			array_push($params, func_get_arg($i));
 		}
 		$result = [];
-		foreach (self::$functionalities as $functionality) {
+		foreach ($this->functionalities as $functionality) {
 			$functionality = "Listfic\\Functionality\\$functionality";
 			if (method_exists($functionality, $method)) {
 				$reponse = call_user_func_array([$functionality, $method], $params);
@@ -209,7 +218,7 @@ class Directory {
 	 * @param array $ini - Le fichier ini à traiter. Récupère le fichier en cas d'absence.
 	 * @return Directory
 	 */
-	public function ini_get($ini=null) {
+	public function ini_get($ini = null) {
 		if (is_null($ini)) {
 			$path_iniFile = $this->path_iniFile;
 
@@ -218,21 +227,31 @@ class Directory {
 				include($path_iniFile);
 			}
 		}
-		$this->executeFunction('ini_get', $ini);
+		foreach($this->functionalities as $class=>&$functionality) {
+			$class = "\\Listfic\\Functionality\\" . ucfirst($class);
+			$functionality = new $class($this, $ini);
+		}
+
+		// $this->executeFunction('ini_get', $ini);
 		return $this;
 	}
 	public function ini_create() {
-		$ini = $this->executeFunction('ini_create');
-		$result = "";
-		$result .= "<?php\r\n";
-		$result .= "// Projet : ".$this->url." \r\n";
-		$result .= "\$ini = array (\r\n";
-		$result .= "".implode("\r\n",$ini).");\r\n";
-		$result .= "?".">";
+		// $ini = $this->executeFunction('ini_create');
+		$ini = array_map(function($functionality) {
+			return $functionality->ini_create();
+		}, $this->functionalities);
+		$ini = implode("\r\n", $ini);
+
+		$result[] = "<?php";
+		$result[] = "// Project : ".$this->url." ";
+		$result[] = "\$ini = [";
+		$result[] = $ini;
+		$result[] = "];";
+		$result = implode("\r\n", $result);
 		return $result;
 	}
 	public function ini_put($forcer=false) {
-		if ($this->modified == false && !$forcer) {
+		if ($this->modified === false && !$forcer) {
 			return $this;
 		}
 		$path_iniFile = $this->path_iniFile;
@@ -251,13 +270,13 @@ class Directory {
 			return $result;
 		}
 		if ($suffix === "") {
-			$suffix = static::$files_suffix;
+			$suffix = $this->files_suffix;
 		}
 		$result = $this->path."/".$suffix;
 		if (file_exists($result)) {
 			return $result;
 		}
-		if ($suffix === static::$files_suffix) {
+		if ($suffix === $this->files_suffix) {
 			$result = $this->path."/".basename($this->path);
 			if (file_exists($result)) {
 				return $result;
@@ -272,16 +291,16 @@ class Directory {
 	 */
 	public function path_zip($suffix="") {
 		$result = basename($this->path).$suffix.".zip";
-		if (empty(self::$zipPath)) {
+		if (empty($this->zipPath)) {
 			$directory = $this->path;
-		} else if (substr(self::$zipPath, 0, 2) === "./") {
-			$directory = $this->path."/".substr(self::$zipPath, 2);
-		} else if (substr(self::$zipPath, 0, 3) === "../") {
-			$directory = dirname($this->path).substr(self::$zipPath, 3);
-		} else if (substr(self::$zipPath, 0, 1) === "/") {
-			$directory = self::$root."/".substr(self::$zipPath, 1);
+		} else if (substr($this->zipPath, 0, 2) === "./") {
+			$directory = $this->path."/".substr($this->zipPath, 2);
+		} else if (substr($this->zipPath, 0, 3) === "../") {
+			$directory = dirname($this->path).substr($this->zipPath, 3);
+		} else if (substr($this->zipPath, 0, 1) === "/") {
+			$directory = $this->root."/".substr($this->zipPath, 1);
 		} else {
-			$directory = self::$root."/".self::$zipPath;
+			$directory = $this->root."/".$this->zipPath;
 		}
 		$result = $directory."/".$result;
 		return $result;
@@ -291,7 +310,7 @@ class Directory {
 	 * @return boolean
 	 */
 	public function adjustZip($flags=0) {
-		$suffix = ($flags & self::PATH_SOLUTION) ? self::$solution_suffix : "";
+		$suffix = ($flags & self::PATH_SOLUTION) ? $this->solution_suffix : "";
 		$pathFile = $this->path_file($suffix);
 		$pathZip = $this->path_zip($suffix);
 		//s'il n'y a pas de ini_fichiers, on vérifie s'il y a un directory du meme nom ou un zip
@@ -318,7 +337,7 @@ class Directory {
 	 * @return boolean
 	 */
 	public function adjustSubDirectory($flags=0) {
-		$suffix = ($flags & self::PATH_SOLUTION) ? self::$solution_suffix : "";
+		$suffix = ($flags & self::PATH_SOLUTION) ? $this->solution_suffix : "";
 		$pathFile = $this->path_file($suffix);
 		$pathZip = $this->path_zip($suffix);
 		// Il n'y a que le zip, on ne crée pas de directory
@@ -344,7 +363,7 @@ class Directory {
 		$this->adjustDirectory(dirname($pathZip));
 		$path = realpath($pathFile);
 		$element = basename($this->path);
-		if ($suffix && $suffix != static::$files_suffix) {
+		if ($suffix && $suffix !== $this->files_suffix) {
 			$element .= $suffix;
 		}
 		$zip = new ZipArchive;
@@ -416,7 +435,7 @@ class Directory {
 	 */
 	public function zip_validName($name) {
 		$name = basename($name);
-		foreach(self::$zipExclusions as $patt) {
+		foreach($this->zipExclusions as $patt) {
                     if (preg_match("#$patt#", $name)) {
                         return false;
                     }
@@ -528,7 +547,7 @@ class Directory {
 		return false;	//TODO Vérifier la pertinence
 	}
 	public function html_updateForm() {
-		$path_iniFile = $this->path_iniFile();
+		$path_iniFile = $this->path_iniFile;
 		$ini = file_get_contents ($path_iniFile);
 		$form = '';
 		$form .= '<div id="form" style="position:fixed; left:0; top:0; right:0; bottom:0; background-color:rgba(0,0,0,.5);z-index:2000; line-height:2em;">';
@@ -542,7 +561,7 @@ class Directory {
 		return $form;
 	}
 	public function html_fileLink($name, $extensions=["htm","html","php"]) {
-		$label = self::$labels[$name];
+		$label = $this->labels[$name];
 		if (isset($this->links[$label])) {
 			return "";
 		}
@@ -594,11 +613,11 @@ class Directory {
 	public function link_files($flags=0) {
 		// Lien FICHIERS
 		$type = ($flags & self::PATH_SOLUTION) ? "solution" : "files";
-		$label = self::$labels[$type];
+		$label = $this->labels[$type];
 		$data[$type] = $this->url;
-		return self::link_download($label, $data, $type);
+		return $this->link_download($label, $data, $type);
 	}
-	static public function link_download($label, $data, $class='') {
+	public function link_download($label, $data, $class='') {
 		$attrs = [];
 		if ($class) {
 			$attrs['class'] = 'telecharger '.$class.'';
@@ -606,12 +625,12 @@ class Directory {
 			$attrs['class'] = 'telecharger';
 		}
 		$attrs['href'] = 'telecharger.php?'.$data[0].'='.$data[1].'';
-//		$attrs['href'] = 'telecharger.php?'.self::encoder($data).'';
+//		$attrs['href'] = 'telecharger.php?'.$this->encoder($data).'';
 		$attrs['title'] = $label;
-		$attrs = self::attrString($attrs);
+		$attrs = $this->attrString($attrs);
 		return '<a '.$attrs.'></a>';
 	}
-	static public function attrString($attrs) {
+	public function attrString($attrs) {
 		$result = [];
 		foreach ($attrs as $name=>$val) {
 			$result[] = ''.$name.'="'.htmlspecialchars($val).'"';
@@ -619,7 +638,7 @@ class Directory {
 		$result = implode(" ", $result);
 		return $result;
 	}
-	static public function encode($data) {
+	public function encode($data) {
 		$data = serialize($data);
 		$data = base64_encode($data);
 		$data = str_rot13($data);
@@ -627,7 +646,7 @@ class Directory {
 		$data = strtr($data, '+/', '-_');
 		return $data;
 	}
-	static public function decode($data) {
+	public function decode($data) {
 		$data = strtr($data, '-_', '+/');
 		$data = str_pad($data, 4*ceil(strlen($data)/4), "=", STR_PAD_RIGHT);
 		$data = str_rot13($data);
@@ -641,7 +660,7 @@ class Directory {
 	 * @param type $file Chemin vers le directory ou fichier
 	 * @return boolean Retourne true s'il y a eu suppression
 	 */
-	static public function deleteFile($file) {
+	public function deleteFile($file) {
 		if (!file_exists($file)) return false;
 		if (is_dir($file)) {
 			$contenu = glob("{$file}/*");
@@ -659,7 +678,7 @@ class Directory {
 	 * @param type $arbo
 	 * @return string Du html
 	 */
-	static public function relative($de, $a){
+	public function relative($de, $a){
 		$de = realpath($de);
 		$a = realpath($a);
 		if (!is_dir($de)) $de = dirname($de);
@@ -677,20 +696,12 @@ class Directory {
 		return $path;
 	}
 	public function relative_site($path){
-		return self::relative(self::$root, $path);
+		return $this->relative($this->root, $path);
 	}
 	public function relative_directory($path){
 		$path = $this->relative_site($path);
 		$path = substr($path, strlen($this->url)+1);
 		return $path;
-	}
-	// Valeurs par défaut
-	//protected $_description = "";
-	static public function init() {
-		// Pas besoin d'appeler le parent puisque le init du parent est déjà appelé
-		self::$functionalities[] = 'Files';
-		self::$functionalities[] = 'Solution';
-		self::$root = realpath('.');
 	}
 	// ACCESSORS ////////////////////////////////////////////////////////////////
 
@@ -717,7 +728,7 @@ class Directory {
 		}
 		if ($this->solution) {
 			$result .= '<a class="solution toggle on" href="?admin'.$ajax.'&amp;s'.$commande.'=false">Retirer le directory de solution</a>';
-		} else if (file_exists($this->path_file(self::$solution_suffix))||file_exists($this->path_zip(self::$solution_suffix))) {
+		} else if (file_exists($this->path_file($this->solution_suffix))||file_exists($this->path_zip($this->solution_suffix))) {
 			$result .= '<a class="solution toggle off" href="?admin'.$ajax.'&amp;s'.$commande.'=true">Publier le directory de solution</a>';
 		} else {
 			$result .= '<a class="solution toggle off" href="?admin'.$ajax.'&amp;s'.$commande.'=true">Créer un directory de solution</a>';
@@ -738,5 +749,3 @@ class Directory {
 		else return '';
 	}
 }
-Directory::init();
-

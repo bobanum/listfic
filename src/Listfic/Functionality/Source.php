@@ -1,16 +1,17 @@
 <?php
 namespace Listfic\Functionality;
 class Source extends Functionality {
-	static public $name = "Source";
-	static public $fieldName = "source";
-	static public $label = "Source";
-	static public $description = 'Booléen. Doit-on afficher la source?';
-	static private $choices = [
+	public $name = "Source";
+	public $fieldName = "source";
+	public $label = "Source";
+	public $description = 'Booléen. Doit-on afficher la source?';
+	protected $_value = false;
+	private $choices = [
 		'Visible'=>'true',
 		'Cachée'=>'false',
 	];
-	static public function html_form($directoryObject) {
-		$champ = static::html_select($directoryObject, static::$choices);
-		return static::html_form_line($champ);
+	public function html_form() {
+		$champ = $this->html_select($this->choices);
+		return $this->html_form_line($champ);
 	}
 }

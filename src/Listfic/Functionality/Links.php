@@ -1,14 +1,14 @@
 <?php
 namespace Listfic\Functionality;
 class Links extends Functionality {
-	static public $name = "Liens";
-	static public $fieldName = "links";
-	static public $label = "Liens";
-	static public $description = 'Un tableau de links (étiquette=>url) ou une série de lines (étiquette=url)';
-	static public function ini_get($directoryObject, $ini){
-		parent::ini_get($directoryObject, $ini);
-		if (!is_array($directoryObject->links)) {
-			$lines = trim($directoryObject->links);
+	public $name = "Liens";
+	public $fieldName = "links";
+	public $label = "Liens";
+	public $description = 'Un tableau de links (étiquette=>url) ou une série de lines (étiquette=url)';
+	public function ini_get($ini){
+		parent::ini_get($ini);
+		if (!is_array($this->value)) {
+			$lines = trim($this->value);
 			if ($lines) {
 				$lines = preg_split("#\r\n|\n\r|\n|\r#", $lines);
 			} else {
@@ -19,19 +19,22 @@ class Links extends Functionality {
 				$line = explode("=", $line, 2);
 				$result[$line[0]] = $line[1];
 			}
-			$directoryObject->links = $result;
+			$this->value = $result;
 		}
-		return $directoryObject->links;
+		return $this->value;
 	}
-	static public function html_form($directoryObject) {
-		$fieldName = static::$fieldName;
+	public function html_form() {
+		$fieldName = $this->fieldName;
 		$val = [];
-		foreach ($directoryObject->links as $label=>$url) {
+		foreach ($this->value as $label=>$url) {
 			$val[] = $label."=".$url;
 		}
 		$val = implode("\r\n", $val);
-		$champ = '';
-		$champ .= '<textarea name="'.$fieldName.'" id="'.$fieldName.'" cols="40" rows="3" style="vertical-align:top;">'.$val.'</textarea>';
-		return static::html_form_line($champ);
+		$result = '';
+		$result .= '<textarea name="'.$fieldName.'" id="'.$fieldName.'" cols="40" rows="3" style="vertical-align:top;">';
+		$result .= $val;
+		$result .= '</textarea>';
+		$result = $this->html_form_line($result);
+		return $result;
 	}
 }

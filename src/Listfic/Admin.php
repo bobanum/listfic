@@ -24,7 +24,7 @@ class Admin {
 			if (filesize($fic2)==0) {
 				$menu[self::REFERENCE] = false;
 				$affichage .= '<td>'.self::html_menu($menu).'0</td>';
-			} else if (file_get_contents($file) == file_get_contents($fic2)) {
+			} else if (file_get_contents($file) === file_get_contents($fic2)) {
 				$menu[self::COPY] = false;
 				$affichage .= '<td>'.self::html_menu($menu).'=</td>';
 			} else {
@@ -68,11 +68,11 @@ class Admin {
 			$f = basename($val);
 			$d = dirname($val);
 			if (!isset($result[$f])) $result[$f] = $arr;
-			if ($d == "$directory") {
+			if ($d === "$directory") {
 				$result[$f][0] = filesize("$directory/$f");
 			} else {
 				foreach($suffixes as $s) {
-					if ($d == "$directory/$directory{$s}") $result[$f][$s] = filesize("$directory/$directory{$s}/$f");
+					if ($d === "$directory/$directory{$s}") $result[$f][$s] = filesize("$directory/$directory{$s}/$f");
 				}
 			}
 		}
@@ -127,7 +127,7 @@ class Admin {
 				if (isset($fic_array[$s])) {
 					if ($fic_array[$s]==0) {
 						$affichage .= self::html_td($dataUrl, 'reference');
-					} else if ($fic_array[0] === $fic_array[$s] && $texte0 == file_get_contents("$directory/$directory$s/$nomfic")) {
+					} else if ($fic_array[0] === $fic_array[$s] && $texte0 === file_get_contents("$directory/$directory$s/$nomfic")) {
 						$affichage .= self::html_td($dataUrl, 'pareil');
 					} else {
 						$affichage .= self::html_td($dataUrl, 'different');
@@ -233,7 +233,7 @@ class Admin {
 	static public function exec() {
 		if (isset($_GET['action'])) {
 			$action = $_GET['action'];
-			if ($action == "copier") {
+			if ($action === "copier") {
 				if (!isset($_GET['directory']) || !isset($_GET['suffix']) || !isset($_GET['fichier'])) {
 					print_r($_GET);
 					exit("false".__LINE__);
@@ -254,7 +254,7 @@ class Admin {
 				$retour = self::html_td($dataUrl, 'pareil');
 				echo $retour;
 				exit();
-			} elseif ($action == 'reference') {
+			} elseif ($action === 'reference') {
 				if (!isset($_GET['directory']) || !isset($_GET['suffix']) || !isset($_GET['fichier'])) {
 					print_r($_GET);
 					exit("false".__LINE__);
@@ -272,7 +272,7 @@ class Admin {
 				$retour = self::html_td($dataUrl, 'reference');
 				echo $retour;
 				exit();
-			} elseif ($action == 'supprimer') {
+			} elseif ($action === 'supprimer') {
 				if (!isset($_GET['directory']) || !isset($_GET['suffix']) || !isset($_GET['fichier'])) {
 					print_r($_GET);
 					exit("false".__LINE__);
@@ -288,7 +288,7 @@ class Admin {
 				$retour = self::html_td($dataUrl, 'absent');
 				echo $retour;
 				exit();
-			} elseif ($action == 'createdirectory') {
+			} elseif ($action === 'createdirectory') {
 				if (!isset($_GET['directory'])) {
 					self::goto();
 				}
@@ -343,7 +343,7 @@ class Admin {
 	    $directory = opendir($src);
 	    @mkdir($dst);
 	    while(false !== ( $file = readdir($directory)) ) {
-	        if (( $file != '.' ) && ( $file != '..' )) {
+	        if (( $file !== '.' ) && ( $file !== '..' )) {
 	            self::copy($src . '/' . $file,$dst . '/' . $file);
 	        }
 	    }
@@ -356,7 +356,7 @@ class Admin {
 	    }
 	    $directory = opendir($src);
 	    while(false !== ( $file = readdir($directory)) ) {
-	        if (( $file != '.' ) && ( $file != '..' )) {
+	        if (( $file !== '.' ) && ( $file !== '..' )) {
 	            self::unlink($src . '/' . $file);
 	        }
 	    }
