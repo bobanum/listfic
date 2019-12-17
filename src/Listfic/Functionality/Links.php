@@ -9,9 +9,12 @@ class Links extends Functionality {
 		parent::ini_get($directoryObject, $ini);
 		if (!is_array($directoryObject->links)) {
 			$lines = trim($directoryObject->links);
-			if ($lines) $lines = preg_split("#\r\n|\n\r|\n|\r#", $lines);
-			else $lines = array();
-			$result = array();
+			if ($lines) {
+				$lines = preg_split("#\r\n|\n\r|\n|\r#", $lines);
+			} else {
+				$lines = [];
+			}
+			$result = [];
 			foreach ($lines as $line) {
 				$line = explode("=", $line, 2);
 				$result[$line[0]] = $line[1];
@@ -22,7 +25,7 @@ class Links extends Functionality {
 	}
 	static public function html_form($directoryObject) {
 		$fieldName = static::$fieldName;
-		$val = array();
+		$val = [];
 		foreach ($directoryObject->links as $label=>$url) {
 			$val[] = $label."=".$url;
 		}

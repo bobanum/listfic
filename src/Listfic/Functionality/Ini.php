@@ -6,6 +6,7 @@ class Ini extends Functionality {
 	static public $fieldName = "";
 	static public $label = "Fichier INI";
 	static public $description = 'Le fichier ini au complet';
+	
 	static public function html_form($directoryObject){
 		return "";
 	}
@@ -14,7 +15,9 @@ class Ini extends Functionality {
 		return $result;
 	}
 	static public function admin_process() {
-		if (!isset($_GET['a'])) return "";
+		if (!isset($_GET['a'])) {
+			return "";
+		}
 		$directory = array_keys($_GET['a']);
 		$directoryObject = new Directory($directory[0]);
 		$result = $directoryObject->html_updateForm();

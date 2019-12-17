@@ -5,7 +5,11 @@ class Files extends Functionality {
 	static public $name = "Files";
 	static public $fieldName = "files";
 	static public $label = "Files";
-	static public $description = 'Booléen. Y a-t-il des fichfilesiers à télécharger?';
+	static public $description = 'Booléen. Y a-t-il des files à télécharger?';
+	static private $choices = [
+		'Disponible'=>'true',
+		'Non disponible'=>'false',
+	];
 
 	static public function admin_process() {
 		//Rendre les files de départ visibles
@@ -44,19 +48,20 @@ class Files extends Functionality {
 		if (!file_exists($path)) {
 			return "";
 		}
-		if ($condition===false) {
+		if ($condition === false) {
 			return "";
 		}
-		$link = Directory::link_download($label, array("files", $directoryObject->url), 'files');
-		if ($condition===true) {
+		$link = Directory::link_download($label, ["files", $directoryObject->url], 'files');
+		if ($condition === true) {
 			return $link;
 		}
-		if (($time=strtotime($condition))!==false) {
+		if (($time = strtotime($condition)) !== false) {
 			//TODO Réviser l'affichage par date...
-			if ($time<time()) {
+			if ($time < time()) {
 				return $link;
+			} else {
+				return "";
 			}
-			else return "";
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
 		$path = $directoryObject->path.'/'.$condition;
@@ -67,7 +72,7 @@ class Files extends Functionality {
 		return "";
 	}
 	static public function html_form($directoryObject) {
-		$champ = static::html_select($directoryObject, array('Disponible'=>'true','Non disponible'=>'false',));
+		$champ = static::html_select($directoryObject, static::$choices);
 		return static::html_form_line($champ);
 	}
 	static public function ini_get($directoryObject, $ini){

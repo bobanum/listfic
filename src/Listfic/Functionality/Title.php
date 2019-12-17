@@ -5,12 +5,19 @@ class Title extends Functionality {
 	static public $fieldName = "title";
 	static public $label = "Title";
 	static public $description = 'Le title qui s\'affiche dans la liste';
+	static private $patterns = [
+		"<title.*>(.*)</title.*>",
+		"<h1.*>(.*)</h1.*>",
+	];
+
 	static public function html($directoryObject) {
 		return '<a class="title" target="_blank" href="'.$directoryObject->url.'">'.$directoryObject->title.'</a>';
 	}
 	static public function ini_get($directoryObject, $ini){
 		parent::ini_get($directoryObject, $ini);
-		if (!$directoryObject->title) $directoryObject->title = static::findTitle($directoryObject);
+		if (!$directoryObject->title) {
+			$directoryObject->title = static::findTitle($directoryObject);
+		}
 		return $directoryObject->title;
 	}
 	/**
@@ -23,13 +30,9 @@ class Title extends Functionality {
 		if (count($files = glob($path."/index.*")) === 0) {
 			return $title;
 		}
-		$patterns = [
-			"<title.*>(.*)</title.*>",
-			"<h1.*>(.*)</h1.*>",
-		];
 
 		$html = file_get_contents($files[0]);
-		foreach ($patterns as $pattern) {
+		foreach (static::$patterns as $pattern) {
 			$result = self::match($pattern, $html);
 			if ($result) {
 				return $result;

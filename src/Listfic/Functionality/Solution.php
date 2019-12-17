@@ -6,6 +6,11 @@ class Solution extends Functionality {
 	static public $fieldName = "solution";
 	static public $label = "Solution";
 	static public $description = 'Booléen. Y a-t-il des files de solution?';
+	static private $choices = [
+		'Disponible' => 'true',
+		'Non disponible' => 'false',
+	];
+
 	static public function admin_process() {
 		//Rendre la solution visible
 		if (!isset($_GET['s'])) {
@@ -47,7 +52,7 @@ class Solution extends Functionality {
 		if ($condition===false) {
 			return "";
 		}
-		$link = Directory::link_download($label, array("solution", $directoryObject->url), 'solution');
+		$link = Directory::link_download($label, ["solution", $directoryObject->url], 'solution');
 		if ($condition===true) {
 			return $link;
 		}
@@ -73,7 +78,8 @@ class Solution extends Functionality {
 		}
 	}
 	static public function html_form($directoryObject) {
-		$champ = static::html_select($directoryObject, array('Disponible'=>'true','Non disponible'=>'false',));
-		return static::html_form_line($champ);
+		$result = static::html_select($directoryObject, static::$choices);
+		$result = static::html_form_line($result);
+		return $result;
 	}
 }

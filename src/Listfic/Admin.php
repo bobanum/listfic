@@ -59,8 +59,8 @@ class Admin {
 		foreach($suffixes as $s) {
 			$files = array_diff($files, glob("$directory/{$directory}{$s}"));
 		}
-		$result = array();
-		$arr = array(0=>null);
+		$result = [];
+		$arr = [0=>null];
 		foreach($suffixes as $s) {
 			$arr[$s] = null;
 		}
@@ -104,14 +104,15 @@ class Admin {
 		$affichage .= '<tbody>';
 		foreach($files as $nomfic=>$fic_array) {
 			$affichage .= '<tr>';
-			$menu = array(self::DELETEALL=>"directory=$directory&fichier=$nomfic&action=supprimertout");
+			$menu = [self::DELETEALL=>"directory=$directory&fichier=$nomfic&action=supprimertout"];
 			$affichage .= '<td class="nom">'.self::html_menu($menu).''.$nomfic.'</td>';
 			$dataUrl = "directory=$directory&fichier=$nomfic";
-			$menu = array();
-			$menu[self::COPY] = "action=copier&$dataUrl";
-			$menu[self::REFERENCE] = "action=reference&$dataUrl";
-			$menu[self::DELETE] = "action=supprimer&$dataUrl";
-			$menu[self::UPDATE] = "action=modifier&$dataUrl";
+			$menu = [
+				self::COPY => "action=copier&$dataUrl",
+				self::REFERENCE => "action=reference&$dataUrl",
+				self::DELETE => "action=supprimer&$dataUrl",
+				self::UPDATE => "action=modifier&$dataUrl",
+			];
 			if (isset($fic_array[0])) {
 				$menu[self::COPY] = $menu[self::REFERENCE] = false;
 				$affichage .= '<td class="present" title="taille:'.$fic_array[0].'">'.self::html_menu($menu).'√</td>';
@@ -160,7 +161,7 @@ class Admin {
 	static public function html_td($dataUrl, $class) {
 		$affichage = '';
 		//$dataUrl = "directory=$directory&fichier=$nomfic&suffix=$suffix";
-		$menu = array();
+		$menu = [];
 		$menu[self::COPY] = "action=copier&$dataUrl";
 		$menu[self::REFERENCE] = "action=reference&$dataUrl";
 		$menu[self::DELETE] = "action=supprimer&$dataUrl";

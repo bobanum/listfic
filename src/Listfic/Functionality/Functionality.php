@@ -15,11 +15,16 @@ class Functionality {
 	}
 	static public function ini_get($directoryObject, $ini){
 		$fieldName = static::$fieldName;
-		if (!$fieldName) return;
+		if (!$fieldName) {
+			return;
+		}
 		if (isset($ini[$fieldName])) {
 			$val = $ini[$fieldName];
-			if ($val==='true') $val = true;
-			if ($val==='false') $val = false;
+			if ($val==='true') {
+				$val = true;
+			} else if ($val==='false') {
+				$val = false;
+			}
 			$directoryObject->prop('_'.$fieldName, $val);
 		} else {
 			$directoryObject->modified = true;
@@ -55,7 +60,7 @@ class Functionality {
 		$result .= '</div>';
 		return $result;
 	}
-	static public function html_select($directoryObject, $choices=array()){
+	static public function html_select($directoryObject, $choices=[]){
 		$fieldName = static::$fieldName;
 		$result = '';
 		$result .= '<select name="'.$fieldName.'" id="'.$fieldName.'">';

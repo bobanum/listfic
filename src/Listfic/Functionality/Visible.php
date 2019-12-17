@@ -6,15 +6,24 @@ class Visible extends Functionality {
 	static public $fieldName = "visible";
 	static public $label = "Visible";
 	static public $description = 'Booléen. Le directory est-il visible dans la liste? Il reste tout de même accessible.';
+	static private $choices = [
+		'Visible'=>'true',
+		'Caché'=>'false',
+	];
 	static public function admin_process() {
 		//Rendre le projet visible
-		if (!isset($_GET['v'])) return false;
+		if (!isset($_GET['v'])) {
+			return false;
+		}
 		$result = '';
 		foreach($_GET['v'] as $directory=>$etat) {
 			//$directory = $this->domaine."/".$directory;
 			$directoryObject = new Directory($directory);
-			if ($etat == 'true') $directoryObject->visible = true;
-			else $directoryObject->visible = false;
+			if ($etat == 'true') {
+				$directoryObject->visible = true;
+			} else {
+				$directoryObject->visible = false;
+			}
 			$directoryObject->ini_put(true);
 			$result .= $directoryObject->html_projectLine(true);
 		}
@@ -30,7 +39,7 @@ class Visible extends Functionality {
 		return $result;
 	}
 	static public function html_form($directoryObject) {
-		$champ = static::html_select($directoryObject, array('Visible'=>'true','Caché'=>'false',));
+		$champ = static::html_select($directoryObject, static::$choices);
 		return static::html_form_line($champ);
 	}
 }

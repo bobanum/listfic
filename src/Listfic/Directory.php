@@ -8,16 +8,20 @@ class Directory {
 	/** @var string - Le nom du petit fichier à laisser dans le directory */
 	static public $iniFilename = "_ini.php";
 	/** @var string - Tableau des regexp des files/directories à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
-	static public $zipExclusions = array(/*'underscoreStart'=>'^_', */'underscoreEnd'=>'_$', 'dotStart'=>'^\.');
-	static public $labels = array(
-			"files"=>"Files",
-			"solution"=>"Solution",
-			"directives"=>"Directives",
-	);
+	static public $zipExclusions = [
+		/*'underscoreStart'=>'^_', */
+		'underscoreEnd'=>'_$', 
+		'dotStart'=>'^\.',
+	];
+	static public $labels = [
+		"files"=>"Files",
+		"solution"=>"Solution",
+		"directives"=>"Directives",
+	];
 	//TODO Réviser :
-	static public $functionalities = array(
+	static public $functionalities = [
 		'Ini','Title','Category','Prefix','Links','Source','Visible',
-	);
+	];
 	/** @var string Ce qui se trouve juste avant le url pour faire un path absolu. Déterminé au init. */
 	static public $root;
 	/** @var string Le directory dans lequel mettre les files zip. */
@@ -36,7 +40,7 @@ class Directory {
 	// Valeurs par défaut
 	protected $_category = "Autres";
 	protected $_prefix = "";
-	protected $_links = array();
+	protected $_links = [];
 	protected $_title = "";
 	protected $_source = false;
 	protected $_visible = false;
@@ -161,16 +165,16 @@ class Directory {
 	 * @note La fonction prend des paramètres multiples
 	 */
 	public function executeFunction($methodName) {
-		$params = array($this);
-		for ($i=1; $i<func_num_args(); $i++) {
+		$params = [$this];
+		for ($i = 1; $i < func_num_args(); $i += 1) {
 			array_push($params, func_get_arg($i));
 		}
-		$result = array();
+		$result = [];
 		foreach (self::$functionalities as $functionality) {
 			$functionality = "Listfic\\Functionality\\$functionality";
 			$test = class_exists("$functionality");
 			if (method_exists($functionality, $methodName)) {
-				$reponse = call_user_func_array(array($functionality, $methodName), $params);
+				$reponse = call_user_func_array([$functionality, $methodName], $params);
 				if ($reponse) {
 					$result[$functionality] = $reponse;
 				}
@@ -184,15 +188,15 @@ class Directory {
 	 * @note La fonction prend des paramètres multiples
 	 */
 	static public function executeStaticFunction($method) {
-		$params = array();
+		$params = [];
 		for ($i=1; $i<func_num_args(); $i++) {
 			array_push($params, func_get_arg($i));
 		}
-		$result = array();
+		$result = [];
 		foreach (self::$functionalities as $functionality) {
 			$functionality = "Listfic\\Functionality\\$functionality";
 			if (method_exists($functionality, $method)) {
-				$reponse = call_user_func_array(array($functionality, $method), $params);
+				$reponse = call_user_func_array([$functionality, $method], $params);
 				if ($reponse) {
 					$result[$functionality] = $reponse;
 				}
@@ -209,7 +213,7 @@ class Directory {
 		if (is_null($ini)) {
 			$path_iniFile = $this->path_iniFile;
 
-			$ini = array();
+			$ini = [];
 			if (file_exists($path_iniFile)) {
 				include($path_iniFile);
 			}
@@ -454,9 +458,11 @@ class Directory {
 	 * @param type $pathTo Le chemin absolu vers le directory dans lequel on doit copier l'élément
 	 */
 	public function subDirectory_add($pathFrom, $pathTo, $force=false) {
-		$aliasesNames = array("images", "scripts", "script", "style", "styles");
-		$nonAliasExtensions = array("php","htm","html","xhtml");
-		if (!$force && $this->subDirectory_validName($pathFrom)==false) return false;
+		$aliasesNames = ["images", "scripts", "script", "style", "styles"];
+		$nonAliasExtensions = ["php","htm","html","xhtml"];
+		if (!$force && $this->subDirectory_validName($pathFrom) === false) {
+			return false;
+		}
 		//$path = $pathDestination."/".basename($pathOrigine).$suffix;
 		$name = basename($pathFrom);
 		$ext = pathinfo($pathFrom, PATHINFO_EXTENSION);

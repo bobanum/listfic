@@ -18,8 +18,20 @@ class Listfic {
 	static public $ajaxMode = true;
 	static public $page = "";
 	static public $ini = [];
-	static public $catbase = array("Exemples","Exercices","Travaux");	//TODO Localize
-	static public $exclusions = array('^_', '_$', '^\.', 'theophile', 'nbproject', 'fontes', 'images');	//TODO Put in config file
+	static public $catbase = [
+		"examples" => "Exemples",
+		"exercices" => "Exercices",
+		"homeworks" => "Travaux",
+	];	//TODO Localize
+	static public $exclusions = [
+		'^_',
+		'_$',
+		'^\.',
+		'theophile',
+		'nbproject',
+		'fontes',
+		'images',
+	];	//TODO Put in config file
 	public function __construct($domain=".") {
 		$this->domain = $domain;
 		$this->directories = $this->getDirectories();
@@ -74,7 +86,7 @@ class Listfic {
 	 * @return array
 	 */
 	public function arbo($all = false) {
-		$result = array();
+		$result = [];
 		foreach($this->directories as $path=>$directory){
 			if ($all || $directory->visible || static::isAdmin()) {
 				$category = $directory->category;
@@ -82,7 +94,7 @@ class Listfic {
 				$ptr = &$result;
 				while (count($categories)) {
 					$category = array_shift($categories);
-					if (!isset($ptr[$category])) $ptr[$category] = array();
+					if (!isset($ptr[$category])) $ptr[$category] = [];
 					$ptr = &$ptr[$category];
 				}
 				$ptr[$path] = $directory;
@@ -91,7 +103,7 @@ class Listfic {
 		return $result;
 	}
 	public function arbo_sort($arbo) {
-		$nouveau = array();
+		$nouveau = [];
 		// On commence par placer Les éléments standards
 		foreach(static::$catbase as $cat){
 			if (isset($arbo[$cat])) {
@@ -107,7 +119,7 @@ class Listfic {
 			unset($nouveau['Autres']);
 		}
 		// On fait le tri des éléments restant (title et catégorie)
-		$triNouveau = array();	// Variable qui sert à déterminer l'ordre de tri
+		$triNouveau = [];	// Variable qui sert à déterminer l'ordre de tri
 		foreach($arbo as $cat=>&$value){
 			if (is_array($value)) {
 				$triNouveau[] = strtolower($cat);
