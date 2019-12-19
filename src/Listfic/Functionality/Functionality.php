@@ -7,6 +7,7 @@ class Functionality {
 	protected $name = "Functionality";
 	protected $fieldName = "functionality";
 	protected $label = "Functionality";
+	protected $dataType = "string";
 	protected $description = "La description de la Functionality";
 
 	protected $directory = null;
@@ -30,11 +31,17 @@ class Functionality {
 		}
 		throw new Exception("Undefined property '$name'.");
 	}
+	// public function __toString() {
+	// 	return "{$this->value}";
+	// }
 	public function get_value() {
 		return $this->_value;
 	}
 	public function set_value($val) {
 		$this->_value = $val;
+	}
+	public function html_links() {
+
 	}
 	public function html_button(){
 		return "<button>Empty</button>";

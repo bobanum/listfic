@@ -40,39 +40,40 @@ class Files extends Functionality {
 	}
 	/**
 	 * Retourne un link HTML vers le zip des files en vérifiant toutes les conditions
-	 * @return string Le <a> résultant
+	 * @return array Le <a> résultant
 	 * @todo Permettre de forcer le link pour l'admin
 	 */
-	public function html_lien() {
-		$path = $this->directory->path_file(Directory::$files_suffix);
+	public function html_links() {
+		$path = $this->directory->path_file($this->directory->files_suffix);
 		$label = $this->label;
 		$condition = $this->value;
+		$result = [];
 
 		if (!file_exists($path)) {
-			return "";
+			return $result;
 		}
 		if ($condition === false) {
-			return "";
+			return $result;
 		}
-		$link = Directory::link_download($label, ["files", $this->directory->url], 'files');
+		$result[$this->fieldName] = $this->directory->link_download($label, ["files", $this->directory->url], 'files');
 		if ($condition === true) {
-			return $link;
+			return $result;
 		}
 		if (($time = strtotime($condition)) !== false) {
 			//TODO Réviser l'affichage par date...
 			if ($time < time()) {
-				return $link;
+				return $result;
 			} else {
-				return "";
+				return [];
 			}
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
-		$path = $this->directory->path.'/'.$condition;
-		$url = $this->directory->url.'/'.$condition;
+		$path = $this->directory->path($condition);
+		$url = $this->directory->url($condition);
 		if (file_exists($path)) {
-			return '<a href="'.$url.'">'.$label.'</a>';
+			return [$this->fieldName => '<a href="'.$url.'">'.$label.'</a>'];
 		}
-		return "";
+		return [];
 	}
 	public function html_form() {
 		$champ = $this->html_select($this->choices);

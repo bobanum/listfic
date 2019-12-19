@@ -42,7 +42,7 @@ class Solution extends Functionality {
 	 * @return string Le <a> résultant
 	 * @todo Permettre de forcer le link pour l'admin
 	 */
-	public function html_lien() {
+	public function html_link() {
 		$path = $this->directory->path_zip("_solution");
 		$label = $this->label;
 		$condition = $this->value;

@@ -92,7 +92,7 @@ class Listfic {
 		$result = [];
 		foreach($this->directories as $path=>$directory){
 			if ($all || $directory->visible || $this->isAdmin()) {
-				$category = $directory->category;
+				$category = $directory->category_value;
 				$categories = explode("/", $category);
 				$ptr = &$result;
 				while (count($categories)) {
@@ -128,7 +128,7 @@ class Listfic {
 				$triNouveau[] = strtolower($cat);
 				$value = $this->arbo_sort($value);
 			}else{
-				$triNouveau[] = strtolower($value->prefix.$value->title.time());
+				$triNouveau[] = strtolower($value->prefix_value . $value->title_value . time());
 			}
 		}
 		array_multisort($triNouveau, $arbo);

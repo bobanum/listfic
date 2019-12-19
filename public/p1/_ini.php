@@ -15,11 +15,14 @@ $ini = [
 	'links' => array (
 ),
 
+	//Directives...
+	'directives' => '',
+
 	//Booléen. Doit-on afficher la source?
 	'source' => false,
 
 	//Booléen. Le directory est-il visible dans la liste? Il reste tout de même accessible.
-	'visible' => false,
+	'visible' => true,
 
 	//Booléen. Y a-t-il des files à télécharger?
 	'files' => false,
