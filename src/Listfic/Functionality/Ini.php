@@ -11,7 +11,7 @@ class Ini extends Functionality {
 		return "html_form";
 	}
 	public function html_button(){
-		$result = '<a style="font-size: 150%; line-height: 0; position: relative; text-decoration: none; top: 0.21em;" href="?admin&a='.urlencode($this->directory->url).'">&#x270D;</a>';
+		$result = '<a style="font-size: 150%; line-height: 0; position: relative; text-decoration: none; top: 0.21em;" href="?admin&a='.urlencode($this->directory->url()).'">&#x270D;</a>';
 		return $result;
 	}
 	static public function admin_process() {

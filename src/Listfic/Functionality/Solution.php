@@ -2,10 +2,12 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Solution extends Functionality {
+	use ZipTrait;
 	public $name = "Solution";
 	public $fieldName = "solution";
 	public $label = "Solution";
 	public $description = 'Booléen. Y a-t-il des files de solution?';
+	public $suffix = '_solution';
 	protected $_value = false;
 	private $choices = [
 		'Disponible' => 'true',
@@ -27,10 +29,10 @@ class Solution extends Functionality {
 		return $result;
 	}
 	public function html_button() {
-		$data = 's['.urlencode($this->directory->url).']';
+		$data = 's['.urlencode($this->directory->url()).']';
 		if ($this->value) {
 			$result = '<a class="solution toggle on" href="?admin&'.$data.'=false">S</a>';
-		} else if (file_exists($this->directory->path_file(Directory::$solution_suffix))) {
+		} else if (file_exists($this->path())) {
 			$result = '<a class="solution toggle off" href="?admin&'.$data.'=true">S</a>';
 		} else {
 			$result = '<a class="solution toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
@@ -43,7 +45,7 @@ class Solution extends Functionality {
 	 * @todo Permettre de forcer le link pour l'admin
 	 */
 	public function html_link() {
-		$path = $this->directory->path_zip("_solution");
+		/* $path = $this->directory->path_zip("_solution");
 		$label = $this->label;
 		$condition = $this->value;
 		if (!file_exists($path)) {
@@ -52,7 +54,7 @@ class Solution extends Functionality {
 		if ($condition===false) {
 			return "";
 		}
-		$link = Directory::link_download($label, ["solution", $this->directory->url], 'solution');
+		$link = Directory::link_download($label, ["solution", $this->directory->url()], 'solution');
 		if ($condition===true) {
 			return $link;
 		}
@@ -64,22 +66,40 @@ class Solution extends Functionality {
 			else return "";
 		}
 		//TODO Réviser l'utilisation d'une autre adresse
-		$path = $this->directory->path.'/'.$condition;
-		$url = $this->directory->url.'/'.$condition;
+		$path = $this->directory->path($condition);
+		$url = $this->directory->url($condition);
 		if (file_exists($path)) {
 			return '<a href="'.$url.'">'.$label.'</a>';
 		}
-		return "";
+		return ""; */
 	}
 	public function ini_get($ini){
 		parent::ini_get($ini);
 		if ($this->value === true) {
-			$this->value = $this->directory->adjustZip(Directory::PATH_SOLUTION);
+			$this->value = $this->adjustZip();
 		}
 	}
 	public function html_form() {
 		$result = $this->html_select($this->choices);
 		$result = $this->html_form_line($result);
 		return $result;
+	}
+	/**
+	 * Retourne le chemin absolu du sous-directory de fichier ou de solution (ou autre);
+	 * @param  string [$suffix=""] Le suffix vers le directory
+	 * @return string Un chemin absolu vers le sous-directory
+	 */
+	public function path() {
+		// Allowed patterns : suffixe || namesuffixe
+		$suffix = $this->suffix;
+		$result = $this->directory->path($suffix);
+		if (file_exists($result)) {
+			return $result;
+		}
+		$result = $this->directory->path($this->directory->name . $suffixe);
+		if (file_exists($result)) {
+			return $result;
+		}
+		return false;
 	}
 }

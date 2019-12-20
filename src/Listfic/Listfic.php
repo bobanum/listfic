@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 
 use Listfic\Directory;
 class Listfic {
-	use \Listfic\Html;
+	use \Listfic\Listfic_Html;
 	public $domain = "";
 	public $directories = [];
 	public $arbo = [];
@@ -230,7 +230,7 @@ class Listfic {
 				}
 			break;
 			case 'url': case 'u':
-				$path = $directory->path.'/'.$nomFic;
+				$path = $directory->path($nomFic);
 				if (file_exists($path)) {
 					return $path;
 				} else {

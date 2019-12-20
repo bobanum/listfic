@@ -11,7 +11,7 @@ if (isset($_GET['data'])) {
 	$path = realpath(realpath('.')."/../".$data['d']);
 	$directory = new Directory($path);
 	if ($directory->solution) {
-		$path = $directory->path_file(Directory::$solution_suffix)."/".$data['p'];
+		$path = $directory->solution->path($data['p']);
 		$code = highlight_file($path, true);
 		$code = substr($code, 36, -10).'<br />';
 		$code = str_replace('<br /></span>','</span><br />',$code);
@@ -33,7 +33,7 @@ if (isset($_GET['data'])) {
 function ajouterIframe($code) {
 	chdir(dirname($_SERVER['SCRIPT_FILENAME']));
 	$directory = new Directory('.');
-	$code = "ici".$directory->url.$code;
+	$code = "ici".$directory->url().$code;
 	if ($directory->solution) {
 		return str_replace('</body>', $directory->html_iframe().'</body>', $code);
 	} else {

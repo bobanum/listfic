@@ -11,7 +11,7 @@ class Title extends Functionality {
 	];
 
 	public function html() {
-		return '<a class="title" target="_blank" href="'.$this->directory->url.'">'.$this->value.'</a>';
+		return '<a class="title" target="_blank" href="'.$this->directory->url().'">'.$this->value.'</a>';
 	}
 	public function ini_get($ini){
 		parent::ini_get($ini);
@@ -25,7 +25,7 @@ class Title extends Functionality {
 	 * @return string
 	 */
 	private function findTitle(){
-		$path = $this->directory->path;
+		$path = $this->directory->path();
 		$title = basename($path);
 		if (count($files = glob($path."/index.*")) === 0) {
 			return $title;

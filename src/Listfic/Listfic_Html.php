@@ -11,7 +11,7 @@ namespace Listfic;
 // echo $liste->affichageArbo();
 
 use Listfic\Directory;
-trait Html {
+trait Listfic_Html {
 	public function html_admin() {
 		if (!isset($_GET['admin'])) {
 			return '';

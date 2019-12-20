@@ -2,10 +2,13 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Files extends Functionality {
+	use ZipTrait;
 	public $name = "Files";
 	public $fieldName = "files";
 	public $label = "Files";
 	public $description = 'Booléen. Y a-t-il des files à télécharger?';
+	public $suffix = '_initial';
+	private $_pathZip = '';
 	protected $_value = false;
 	private $choices = [
 		'Disponible'=>'true',
@@ -28,10 +31,10 @@ class Files extends Functionality {
 	}
 
 	public function html_button(){
-		$data = 'f['.urlencode($this->directory->url).']';
+		$data = 'f['.urlencode($this->directory->url()).']';
 		if ($this->value) {
 			$result = '<a class="files toggle on" href="?admin&'.$data.'=false">F</a>';
-		} else if (file_exists($this->directory->path_file())) {
+		} else if (file_exists($this->path())) {
 			$result = '<a class="files toggle off" href="?admin&'.$data.'=true">F</a>';
 		} else {
 			$result = '<a class="files toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
@@ -44,7 +47,7 @@ class Files extends Functionality {
 	 * @todo Permettre de forcer le link pour l'admin
 	 */
 	public function html_links() {
-		$path = $this->directory->path_file($this->directory->files_suffix);
+		$path = $this->path();
 		$label = $this->label;
 		$condition = $this->value;
 		$result = [];
@@ -55,7 +58,7 @@ class Files extends Functionality {
 		if ($condition === false) {
 			return $result;
 		}
-		$result[$this->fieldName] = $this->directory->link_download($label, ["files", $this->directory->url], 'files');
+		$result[$this->fieldName] = $this->directory->link_download($label, ["files", $this->directory->url()], 'files');
 		if ($condition === true) {
 			return $result;
 		}
@@ -82,7 +85,33 @@ class Files extends Functionality {
 	public function ini_get($ini){
 		parent::ini_get($ini);
 		if ($this->value === true) {
-				$this->value = $this->directory->adjustZip();
+			$this->value = $this->adjustZip();
 		}
+	}
+	/**
+	 * Retourne le chemin absolu du sous-directory de fichier ou de solution (ou autre);
+	 * @return string Un chemin absolu vers le sous-directory
+	 */
+	public function path($file = "") {
+		// Allowed patterns : suffixe || name || namesuffixe
+		$suffix = $this->suffix;
+		if ($file) {
+			$file = "/$file";
+		}
+		if ($suffix) {
+			$result = $this->directory->path($suffix);
+			if (file_exists($result)) {
+				return $result.$file;
+			}
+			$result = $this->directory->path($this->directory->name . $suffix);
+			if (file_exists($result)) {
+				return $result.$file;
+			}
+		}
+		$result = $this->directory->path($this->directory->name);
+		if (file_exists($result)) {
+			return $result.$file;
+		}
+		return false;
 	}
 }

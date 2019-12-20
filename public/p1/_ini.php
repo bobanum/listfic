@@ -25,9 +25,9 @@ $ini = [
 	'visible' => true,
 
 	//Booléen. Y a-t-il des files à télécharger?
-	'files' => false,
+	'files' => true,
 
 	//Booléen. Y a-t-il des files de solution?
-	'solution' => false,
+	'solution' => true,
 
 ];

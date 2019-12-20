@@ -31,7 +31,7 @@ class Visible extends Functionality {
 		return $result;
 	}
 	public function html_button(){
-		$data = 'v['.urlencode($this->directory->url).']';
+		$data = 'v['.urlencode($this->directory->url()).']';
 		if ($this->directory->visible) {
 			$result = '<a class="visibilite toggle on" href="?admin&'.$data.'=false">V</a>';
 		} else {
