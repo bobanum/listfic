@@ -2,19 +2,23 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Files extends Functionality {
-	use ZipTrait;
-	public $name = "Files";
+	use ZipTrait {
+		__construct as private ZipTrait__construct;
+	}
 	public $fieldName = "files";
 	public $label = "Files";
 	public $description = 'Booléen. Y a-t-il des files à télécharger?';
-	public $suffix = '_initial';
-	private $_pathZip = '';
+	public $suffix = 'initial';
+	public $_pathZip = '';
 	protected $_value = false;
 	private $choices = [
 		'Disponible'=>'true',
 		'Non disponible'=>'false',
 	];
-
+	public function __construct($directory, $ini=[]) {
+		parent::__construct($directory, $ini);
+		$this->ZipTrait__construct();
+	}
 	static public function admin_process() {
 		//Rendre les files de départ visibles
 		if (!isset($_GET['f'])) {
@@ -87,31 +91,5 @@ class Files extends Functionality {
 		if ($this->value === true) {
 			$this->value = $this->adjustZip();
 		}
-	}
-	/**
-	 * Retourne le chemin absolu du sous-directory de fichier ou de solution (ou autre);
-	 * @return string Un chemin absolu vers le sous-directory
-	 */
-	public function path($file = "") {
-		// Allowed patterns : suffixe || name || namesuffixe
-		$suffix = $this->suffix;
-		if ($file) {
-			$file = "/$file";
-		}
-		if ($suffix) {
-			$result = $this->directory->path($suffix);
-			if (file_exists($result)) {
-				return $result.$file;
-			}
-			$result = $this->directory->path($this->directory->name . $suffix);
-			if (file_exists($result)) {
-				return $result.$file;
-			}
-		}
-		$result = $this->directory->path($this->directory->name);
-		if (file_exists($result)) {
-			return $result.$file;
-		}
-		return false;
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 namespace Listfic\Functionality;
 class Description extends Functionality {
-	public $name = "Description";
 	public $fieldName = "description";
 	public $label = "Description";
 	public $description = 'Une description plus ou moins longue du projet';

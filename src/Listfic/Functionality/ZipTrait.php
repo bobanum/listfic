@@ -3,34 +3,69 @@ namespace Listfic\Functionality;
 // use Listfic\Directory;
 use ZipArchive;
 trait ZipTrait {
-	private $_pathZip = '';
-	protected $_value = false;
+	public $path_zip = ".";
 	/** @var string - Tableau des regexp des files/directories à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
 	public $zipExclusions = [
 		/*'underscoreStart'=>'^_', */
 		'underscoreEnd'=>'_$', 
 		'dotStart'=>'^\.',
 	];
-	public $zipFilenamePattern = "{{name}}{{suffix}}";
+	public $patterns = [
+		'zippedFolder' => '{#name}_{#suffix}',
+		'zipFilename' => '{#zippedFolder}.zip',
+		'zipPath' => '{#archiveFolder}/{#zipFilename}',
+		'folderPath'=> '{#root}/_{#suffix}',
+	];
 
-	public function get_pathZip() {
-		//TODO Check config for global zip placement
-		return $this->_pathZip;
+	public function __construct() {
+	}
+
+	public function get_archiveFolder() {
+		//Absolute path
+		$path_zip = $this->path_zip;
+		if (preg_match('#^[/\\]{2}|^[a-zA-Z]:[/\\\]#', $path_zip)) {
+			return realpath($path_zip);
+		}
+		return realpath("$this->root/$path_zip");
+	}
+	public function get_root() {
+		return $this->directory->path();
+	}
+	public function get_folderPath() {
+		return $this->eval($this->patterns['folderPath']);
+	}
+	public function get_zipPath() {
+		return $this->eval($this->patterns['zipPath']);
+	}
+	public function get_folderUrl() {
+		return $this->directory->path2url($this->folderPath);
+	}
+	public function get_zipUrl() {
+		return $this->directory->path2url($this->zipPath);
+	}
+	public function get_zipFilename() {
+		return $this->eval($this->patterns['zipFilename']);
+	}
+	public function get_zippedFolder() {
+		return $this->eval($this->patterns['zippedFolder']);
+	}
+	public function get_name() {
+		return $this->directory->name;
 	}
 	/**
 	 * Zippe un sous-directory en lui donnant le même nom
 	 * @param type $path Chemin absolu vers le directory à zipper
 	 */
 	public function zip() {
-		$pathFile = $this->path();
-		$pathZip = $this->path_zip();
-		$this->adjustDirectory(dirname($pathZip));
-		$path = realpath($pathFile);
-		$element = basename($pathFile);
+		$folderPath = $this->folderPath;
+		$zipPath = $this->zipPath;
+		$this->adjustDirectory(dirname($zipPath));
+		// $path = realpath($folderPath);
+		$element = basename($folderPath);
 		$zip = new ZipArchive;
-		$res = $zip->open($pathZip, ZipArchive::CREATE);
+		$res = $zip->open($zipPath, ZipArchive::CREATE);
 		if ($res === TRUE) {
-			$this->zip_add($zip, $path, $this->zip_filename());
+			$this->zip_add($zip, $folderPath, $this->zippedFolder);
 		}
 		return $this;
 	}
@@ -93,54 +128,33 @@ trait ZipTrait {
 	 */
 	public function adjustZip() {
 		$suffix = $this->suffix;
-		$pathFunctionality = $this->path();
-		$pathZip = $this->path_zip();
-		if (!file_exists($pathZip) && !file_exists($pathFunctionality)) {
+		$folderPath = $this->folderPath;
+		$zipPath = $this->zipPath;
+		if (!file_exists($zipPath) && !file_exists($folderPath)) {
 			return false;
 		}
-		if (!file_exists($pathZip)) {
+		if (!file_exists($zipPath)) {
 			$this->zip();
-			return $pathZip;
+			return true;
 		}
-		if (!file_exists($pathFunctionality)) {
-			return $pathZip;
+		if (!file_exists($folderPath)) {
+			return true;
 		}
 		//s'il n'y a pas de ini_fichiers, on vérifie s'il y a un directory du meme nom ou un zip
-		if (filemtime($pathZip) >= filemtime($pathFunctionality)) {
-			return $pathZip;
+		if (filemtime($zipPath) >= filemtime($folderPath)) {
+			return true;
 		}
-		unlink($pathZip);	// Le zip est désuet
+		unlink($zipPath);	// Le zip est désuet
 		$this->zip();
-		return $pathZip;
+		return true;
 	}
-	public function zip_filename() {
-		$filename = $this->zipFilenamePattern;
-		$filename = str_replace("{{name}}", '{$this->directory->name}', $filename);
-		$filename = str_replace("{{suffix}}", '{$this->suffix}', $filename);
-		$result = eval("return \"$filename\";");
+
+	public function eval($pattern) {
+		$pattern = str_replace("{#", '{$this->', $pattern);
+		$result = eval("return \"$pattern\";");
 		return $result;
 	}
-	public function path_zip() {
-		//TODO Revise
-		$fileName = $this->zip_filename().".zip";
-		if (empty($this->zipPath)) {
-			//No path for zip = inside directory
-			return $this->directory->path($fileName);
-		}
-		$zipPath = $this->zipPath;
-		while (substr($zipPath, -1) === "/") {
-			$zipPath = substr($zipPath, 0, -1);
-		}
-		if (preg_match("#^[/\]{2}|^[a-zA-Z]:[/\]#", $zipPath)) {
-			//Absolute path
-			return "{$zipPath}/{$fileName}";
-		}
-		if (substr($zipPath, 0, 1) === "/") {
-			//In root directory
-			return $this->directory->root . $zipPath;
-		}
-		return this.path("{$zipPath}/{$fileName}");
-	}
+
 	/**
 	 * S'assure qu'il y a un fichier zip au besoin (et le crée) et retourne true si c'est le cas
 	 * @return boolean
@@ -161,8 +175,8 @@ trait ZipTrait {
 		}
 		return false;
 	}
-	public function subDirectory($suffix='', $delete=false) {
-		$path = $this->path();
+	public function zzzsubDirectory($suffix='', $delete=false) {
+		$path = $this->folderPath;
 		$element = basename($path);
 		$pathDirectory = $path."/".$element.$suffix;
 		if (file_exists($pathDirectory)) {
@@ -219,7 +233,7 @@ trait ZipTrait {
 	 * @param type $path
 	 * @return boolean
 	 */
-	public function subDirectory_validName($path) {
+	public function zzzsubDirectory_validName($path) {
 		$name = basename($path);
 		$valid = $this->zip_validName($name);
 		if (!$valid) {
@@ -233,5 +247,17 @@ trait ZipTrait {
 			return false;
 		}
 		return true;
+	}
+	public function toArray() {
+		$result = [];
+		if ($this->value) {
+			$result[$this->fieldName] = [
+				'url_folder' => $this->folderUrl,
+				'url_archive' => $this->zipUrl,
+			];
+		} else {
+			$result[$this->fieldName] = false;
+		}
+		return $result;
 	}
 }

@@ -1,7 +1,6 @@
 <?php
 namespace Listfic\Functionality;
 class Directives extends Functionality {
-	public $name = "Directives";
 	public $fieldName = "directives";
 	public $label = "Directives";
 	public $description = 'Directives...';

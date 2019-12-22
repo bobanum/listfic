@@ -71,7 +71,7 @@ trait Listfic_Html {
 	 * @param array $arbo
 	 * @return string
 	 */
-	static public function html_arboBranch($arbo, $admin=false) {
+	public function html_arboBranch($arbo, $admin=false) {
 		$result = '<ul class="category">';
 		foreach($arbo as $key=>&$val) {
 			if (is_a($val, '\Listfic\Directory')) {	// C'est un directory

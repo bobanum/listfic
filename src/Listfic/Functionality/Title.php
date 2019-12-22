@@ -1,7 +1,6 @@
 <?php
 namespace Listfic\Functionality;
 class Title extends Functionality {
-	public $name = "Title";
 	public $fieldName = "title";
 	public $label = "Title";
 	public $description = 'Le title qui s\'affiche dans la liste';

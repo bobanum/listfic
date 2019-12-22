@@ -16,19 +16,18 @@ class Directory {
 	// ];
 
 	private $functionalities = [
-		'ini' => null,
-		'title' => null,
-		'category' => null,
-		'prefix' => null,
-		'links' => null,
-		'directives' => null,
-		'source' => null,
-		'visible' => null,
+		// 'ini' => null,
+		// 'title' => null,
+		// 'category' => null,
+		// 'prefix' => null,
+		// 'links' => null,
+		// 'directives' => null,
+		// 'source' => null,
+		// 'visible' => null,
 		'files' => null,
 		'solution' => null,
 	];
-	/** @var string Ce qui se trouve juste avant le url pour faire un path absolu. Déterminé au init. */
-	private $root;
+	public $listfic = null;
 	/** @var string Le directory dans lequel mettre les files zip. */
 	private $_zipPath = "/_zip";
 	/** @var string Le path absolu vers le directory */
@@ -36,6 +35,7 @@ class Directory {
 	/** @var string L'adresse relative vers le directory en fonction de la page courante */
 	private $_url;
 	private $_name;
+	private $updated_at;
 	/** @var boolean Indique si le ini est modifié pour le sauvegarder */
 	public $modified = false;
 	/**
@@ -43,18 +43,18 @@ class Directory {
 	 * @param type $directory - Le directory à analyser. Pour l'instant doit être la racine du site.
 	 * @throws Exception
 	 */
-	public function __construct($directory=".") {
-		$this->root = realpath('.');
+	public function __construct($directory) {
 		if (!is_dir($directory)) {
 			$directory = dirname($directory);
 		}
-		$directory = realpath($directory);
-		if (!file_exists($directory)) {
+		$path = realpath($directory);
+		if (!$path) {
 			throw new \Exception ("Directory '$directory' inexistant");
 		}
-		$this->_path = $directory;
-		$this->_name = basename($directory);
-		$this->_url = $this->relative_site($directory);
+		$this->updated_at = filemtime($directory);
+		$this->_path = $path;
+		$this->_name = basename($path);
+		$this->_url = $this->path2url($path);
 		$this->ini_get();
 		$this->ini_put();
 	}
@@ -122,8 +122,26 @@ class Directory {
 	}
 	public function url($file = null) {
 		$result = $this->_url;
+		$test = $this->listfic->relative_domain($this->_path);
 		if (!is_null($file)) {
 			$result .= "/$file";
+		}
+		return $result;
+	}
+	public function toArray() {
+		$result = [];
+		$result['url'] = $this->url();
+		$result['updated_at'] = $this->updated_at;
+		$functionalities = array_map(function ($functionality) {
+			return $functionality->toArray();
+		}, $this->functionalities);
+		foreach($functionalities as $name=>$functionality) {
+			foreach($functionality as $nameField=>$field) {
+				if ($name !== $nameField) {
+					$name = "{$name}_{$nameField}";
+				}
+				$result[$name] = $field;
+			}
 		}
 		return $result;
 	}
@@ -297,7 +315,7 @@ class Directory {
 	 * @param type $arbo
 	 * @return string Du html
 	 */
-	public function relative($de, $a){
+	public function zzzrelative($de, $a){
 		$de = realpath($de);
 		$a = realpath($a);
 		if (!is_dir($de)) $de = dirname($de);
@@ -314,12 +332,15 @@ class Directory {
 		$path .= implode("/", $a);
 		return $path;
 	}
-	public function relative_site($path){
-		return $this->relative($this->root, $path);
-	}
-	public function relative_directory($path){
-		$path = $this->relative_site($path);
-		$path = substr($path, strlen($this->url())+1);
-		return $path;
+	public function path2url($path) {
+		$result = ($_SERVER['HTTP_HOST'] === "HTTP/1.1"?"http:/":"https:/").$_SERVER['HTTP_HOST'];
+		$path = str_replace($_SERVER['DOCUMENT_ROOT'], "", $path);
+		$path = str_replace("\\", "/", $path);
+
+		if ($path && $path[0] !== "/") {
+			$result .= "/";
+		}
+		$result .= $path;
+		return $result;
 	}
 }

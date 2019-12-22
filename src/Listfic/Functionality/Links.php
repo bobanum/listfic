@@ -1,7 +1,6 @@
 <?php
 namespace Listfic\Functionality;
 class Links extends Functionality {
-	public $name = "Liens";
 	public $fieldName = "links";
 	public $label = "Liens";
 	public $description = 'Un tableau de links (étiquette=>url) ou une série de lines (étiquette=url)';

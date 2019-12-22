@@ -1,7 +1,6 @@
 <?php
 namespace Listfic\Functionality;
 class Source extends Functionality {
-	public $name = "Source";
 	public $fieldName = "source";
 	public $label = "Source";
 	public $description = 'Booléen. Doit-on afficher la source?';

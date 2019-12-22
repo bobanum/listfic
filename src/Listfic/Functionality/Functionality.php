@@ -4,7 +4,6 @@ namespace Listfic\Functionality;
 use Exception;
 
 class Functionality {
-	protected $name = "Functionality";
 	protected $fieldName = "functionality";
 	protected $label = "Functionality";
 	protected $dataType = "string";
@@ -40,8 +39,10 @@ class Functionality {
 	public function set_value($val) {
 		$this->_value = $val;
 	}
-	public function html_links() {
-
+	public function toArray() {
+		$result = [];
+		$result[$this->fieldName] = $this->value;
+		return $result;
 	}
 	public function html_button(){
 		return "<button>Empty</button>";

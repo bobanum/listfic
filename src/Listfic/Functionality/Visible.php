@@ -2,7 +2,6 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Visible extends Functionality {
-	public $name = "Visible";
 	public $fieldName = "visible";
 	public $label = "Visible";
 	public $description = 'Booléen. Le directory est-il visible dans la liste? Il reste tout de même accessible.';

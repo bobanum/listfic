@@ -2,17 +2,22 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Solution extends Functionality {
-	use ZipTrait;
-	public $name = "Solution";
+	use ZipTrait {
+		__construct as private ZipTrait__construct;
+	}
 	public $fieldName = "solution";
 	public $label = "Solution";
 	public $description = 'Booléen. Y a-t-il des files de solution?';
-	public $suffix = '_solution';
+	public $suffix = 'solution';
 	protected $_value = false;
 	private $choices = [
 		'Disponible' => 'true',
 		'Non disponible' => 'false',
 	];
+	public function __construct($directory, $ini=[]) {
+		parent::__construct($directory, $ini);
+		$this->ZipTrait__construct();
+	}
 
 	static public function admin_process() {
 		//Rendre la solution visible
@@ -96,10 +101,10 @@ class Solution extends Functionality {
 		if (file_exists($result)) {
 			return $result;
 		}
-		$result = $this->directory->path($this->directory->name . $suffixe);
+		$result = $this->directory->path($this->directory->name . $suffix);
 		if (file_exists($result)) {
 			return $result;
 		}
-		return false;
+		return "";
 	}
 }

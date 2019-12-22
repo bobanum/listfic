@@ -11,14 +11,15 @@ error_reporting(E_ALL);
 use Listfic\Directory;
 class Listfic {
 	use \Listfic\Listfic_Html;
-	public $domain = "";
-	public $directories = [];
-	public $arbo = [];
-	public $admin = false;
-	public $ajaxMode = true;
-	public $page = "";
-	public $ini = [];
-	public $catbase = [
+	private $domain = "";
+	private $path = "";
+	private $directories = [];
+	private $arbo = [];
+	private $admin = false;
+	private $ajaxMode = true;
+	private $page = "";
+	private $ini = [];
+	private $catbase = [
 		"examples" => "Exemples",
 		"exercices" => "Exercices",
 		"homeworks" => "Travaux",
@@ -34,9 +35,13 @@ class Listfic {
 	];	//TODO Put in config file
 	public function __construct($domain=".") {
 		$this->page = basename($_SERVER['PHP_SELF']);
-		$this->domain = $domain;
-		$this->directories = $this->getDirectories();
-		$this->arbo = $this->arbo_sort($this->arbo());
+		$this->url = dirname($this->path2url($_SERVER['SCRIPT_FILENAME']));
+		$this->domain = realpath($domain);
+		$this->path = dirname($_SERVER['SCRIPT_FILENAME']);
+		$this->url_domain = $this->path2url($this->domain);
+
+		$this->getDirectories();
+		// $this->arbo = /* $this->arbo_sort */($this->arbo_create());
 	}
 	/**
 	 * Retourne true si l'e nom de directory envoyé n'ect pas exclu'usager est administrateur
@@ -71,15 +76,28 @@ class Listfic {
 	}
 	/**
 	 * Récupère les infos des directories non exclus
+	 * @return Directory
+	 */
+	public function addDirectory($directory) {
+		if (is_string($directory) && $this->isExcluded($directory)) {
+			return;
+		}
+		if (!($directory instanceOf Directory)) {
+			$directory = new Directory($directory);
+		}
+		$directory->listfic = $this;
+		$this->directories[] = $directory;
+		return $directory;
+	}
+	/**
+	 * Récupère les infos des directories non exclus
 	 * @return Directory[]
 	 */
 	public function getDirectories() {
 		$result = [];
 		$directories = (glob($this->domain."/*", GLOB_ONLYDIR));
 		foreach ($directories as $directory) {
-			if (!$this->isExcluded($directory)) {
-				$result[$directory] = new Directory($directory);
-			}
+			$this->addDirectory($directory);
 		}
 		return $result;
 	}
@@ -88,7 +106,7 @@ class Listfic {
 	 * @param type $all Si faux, on filtre les résultats
 	 * @return array
 	 */
-	public function arbo($all = false) {
+	public function arbo_create($all = false) {
 		$result = [];
 		foreach($this->directories as $path=>$directory){
 			if ($all || $directory->visible || $this->isAdmin()) {
@@ -131,8 +149,11 @@ class Listfic {
 				$triNouveau[] = strtolower($value->prefix_value . $value->title_value . time());
 			}
 		}
-		array_multisort($triNouveau, $arbo);
-		$nouveau = array_merge($nouveau, $arbo);
+		$test = array_combine($triNouveau, $arbo);
+		ksort($test);
+		// array_sort($triNouveau, $arbo);
+		// sort($triNouveau);
+		$nouveau = array_merge($nouveau, array_values($test));
 		// On remet la catégorie "Autres" en dernier
 		if (isset($autres)) $nouveau['Autres'] = $autres;
 		return $nouveau;
@@ -142,6 +163,17 @@ class Listfic {
 			return $directory->category;
 		}, $this->directories);
 		return true;
+	}
+	public function path2url($path) {
+		$result = ($_SERVER['HTTP_HOST'] === "HTTP/1.1"?"http:/":"https:/").$_SERVER['HTTP_HOST'];
+		$path = str_replace($_SERVER['DOCUMENT_ROOT'], "", $path);
+		$path = str_replace("\\", "/", $path);
+
+		if ($path && $path[0] !== "/") {
+			$result .= "/";
+		}
+		$result .= $path;
+		return $result;
 	}
 	/**
 	 * Retourne le chemin relatif d'un fichier vers un autre
@@ -168,13 +200,27 @@ class Listfic {
 		$path .= implode("/", $to);
 		return $path;
 	}
+	public function relative_domain($path){
+		return $this->relative($this->domain, $path);
+	}
+	public function toArray() {
+		$result = [];
+		$result['domain'] = $this->url_domain;
+		$result['directories'] = array_values(array_map(function ($directory) {
+			return $directory->toArray();
+		}, $this->directories));
+		return $result;
+	}
+	public function toJson() {
+		return json_encode($this->toArray());
+	}
 	//////////////////////////////////////////////////////////////////////////////
 	// ADMINISTRATION ////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
 	/**
 	 * [[Description]]
 	 */
-	public function processDownload($data=null) {
+	static public function processDownload($data=null) {
 		if (is_null($data)) {
 			$data = $_GET;
 		}
@@ -197,7 +243,7 @@ class Listfic {
 		$nomFic = $directoryName.'.zip';
 //		var_dump($data, $keys, $values, $type, $directoryName, $nomFic);
 //		exit;
-		$path = $this->getFile($type, $directoryName, $nomFic);
+		$path = self::getFile($type, $directoryName, $nomFic);
 		if ($path) {
 			$nomFinal = basename($path);
 			header("content-type:application/zip");
@@ -206,7 +252,7 @@ class Listfic {
 			exit;
 		}
 	}
-	public function getFile($type, $directoryName, $nomFic) {
+	static public function getFile($type, $directoryName, $nomFic) {
 		try {
 			$directory = new Directory($directoryName);
 		} catch (\Exception $exc) {
