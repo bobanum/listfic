@@ -1,16 +1,17 @@
 <?php
-//TODO Présentement, on ne peut pas afficher la source d'un fichier dans un sous-dossier. À arranger.
+namespace Listfic;
+//TODO Présentement, on ne peut pas afficher la source d'un fichier dans un sous-directory. À arranger.
 //echo __FILE__."<br>";
 //echo $_SERVER['PHP_SELF']."<br>";
 //print_r(debug_backtrace());
-error_reporting(E_ALL);
+//error_reporting(E_ALL);
 include_once 'autoload.php';
 if (isset($_GET['data'])) {
-	$data = Dossier::decoder($_GET['data']);
+	$data = Directory::decode($_GET['data']);
 	$path = realpath(realpath('.')."/../".$data['d']);
-	$dossier = new Dossier($path);
-	if ($dossier->solution) {
-		$path = $dossier->pathFic(Dossier::$suffixe_solution)."/".$data['p'];
+	$directory = new Directory($path);
+	if ($directory->solution) {
+		$path = $directory->solution->path($data['p']);
 		$code = highlight_file($path, true);
 		$code = substr($code, 36, -10).'<br />';
 		$code = str_replace('<br /></span>','</span><br />',$code);
@@ -31,12 +32,11 @@ if (isset($_GET['data'])) {
 }
 function ajouterIframe($code) {
 	chdir(dirname($_SERVER['SCRIPT_FILENAME']));
-	$dossier = new Dossier('.');
-	$code = "ici".$dossier->url.$code;
-	if ($dossier->solution) {
-		return str_replace('</body>', $dossier->affichageIFrame().'</body>', $code);
+	$directory = new Directory('.');
+	$code = "ici".$directory->url().$code;
+	if ($directory->solution) {
+		return str_replace('</body>', $directory->html_iframe().'</body>', $code);
 	} else {
 		return $code;
 	}
 }
-?>

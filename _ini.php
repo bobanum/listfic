@@ -1,22 +1,22 @@
 <?php
  $ini=array (
-  // Le titre qui s'affiche dans la liste
-  'titre' => '_listfic',
+  // Le title qui s'affiche dans la liste
+  'title' => '_listfic',
   // Categories sous forme "Catégorie/Sous-Catégorie/..."
-  'categorie' => 'Autres',
-  // Un préfixe à mettre devant le titre pour le tri "Cours 01 : "
-  'prefixe' => '',
-  // Un tableau de liens avec la clé comme étiquette et la valeur comme url
-  'liens' =>
+  'category' => 'Autres',
+  // Un prefixe à mettre devant le title pour le tri "Cours 01 : "
+  'prefix' => '',
+  // Un tableau de links avec la clé comme étiquette et la valeur comme url
+  'links' =>
   array (
   ),
   // Booléen. Doit-on afficher la source?
   'source' => false,
-  // Booléen. Le dossier est-il visible dans la liste? Il reste tout de même accessible.
+  // Booléen. Le directory est-il visible dans la liste? Il reste tout de même accessible.
   'visible' => false,
-  // Booléen. Y a-t-il des fichiers à télécharger?
-  'fichiers' => false,
-  // Booléen. Y a-t-il des fichiers de solution?
+  // Booléen. Y a-t-il des files à télécharger?
+  'files' => false,
+  // Booléen. Y a-t-il des files de solution?
   'solution' => false,
 )
 ?>
