@@ -16,14 +16,14 @@ class Directory {
 	// ];
 
 	private $functionalities = [
-		// 'ini' => null,
-		// 'title' => null,
-		// 'category' => null,
-		// 'prefix' => null,
-		// 'links' => null,
-		// 'directives' => null,
-		// 'source' => null,
-		// 'visible' => null,
+		'ini' => null,
+		'title' => null,
+		'category' => null,
+		'prefix' => null,
+		'links' => null,
+		'directives' => null,
+		'source' => null,
+		'visible' => null,
 		'files' => null,
 		'solution' => null,
 	];
@@ -43,7 +43,8 @@ class Directory {
 	 * @param type $directory - Le directory à analyser. Pour l'instant doit être la racine du site.
 	 * @throws Exception
 	 */
-	public function __construct($directory) {
+	public function __construct($directory, $listfic = null) {
+		$this->listfic = $listfic;
 		if (!is_dir($directory)) {
 			$directory = dirname($directory);
 		}

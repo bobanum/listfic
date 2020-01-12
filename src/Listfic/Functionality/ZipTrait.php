@@ -26,7 +26,10 @@ trait ZipTrait {
 		if (preg_match('#^[/\\]{2}|^[a-zA-Z]:[/\\\]#', $path_zip)) {
 			return realpath($path_zip);
 		}
-		return realpath("$this->root/$path_zip");
+		if ($path_zip[0] === "/") {
+			return realpath("{$this->directory->listfic->domain}/{$path_zip}");
+		}
+		return realpath("{$this->root}/{$path_zip}");
 	}
 	public function get_root() {
 		return $this->directory->path();

@@ -11,7 +11,7 @@ error_reporting(E_ALL);
 use Listfic\Directory;
 class Listfic {
 	use \Listfic\Listfic_Html;
-	private $domain = "";
+	public $domain = "";
 	private $path = "";
 	private $directories = [];
 	private $arbo = [];
@@ -83,9 +83,8 @@ class Listfic {
 			return;
 		}
 		if (!($directory instanceOf Directory)) {
-			$directory = new Directory($directory);
+			$directory = new Directory($directory, $this);
 		}
-		$directory->listfic = $this;
 		$this->directories[] = $directory;
 		return $directory;
 	}
@@ -94,12 +93,11 @@ class Listfic {
 	 * @return Directory[]
 	 */
 	public function getDirectories() {
-		$result = [];
 		$directories = (glob($this->domain."/*", GLOB_ONLYDIR));
 		foreach ($directories as $directory) {
 			$this->addDirectory($directory);
 		}
-		return $result;
+		return $this;
 	}
 	/**
 	 * Retourne les directories sous forme de tablbeaus imbriqués avec comme clé, la catégorie

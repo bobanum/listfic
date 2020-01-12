@@ -1,5 +1,5 @@
 <?php
 include_once "src/autoload.php";
-require_once "src/Listfic.php";
-$test = new Listfic();
-var_dump($test);
+$listfic = new Listfic\Listfic("..");
+header("content-type: application/json");
+echo $listfic->toJson();
