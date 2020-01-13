@@ -17,5 +17,16 @@
         "psr-0": {
             "Listfic": "src/"
         }
+    },
+    "scripts": {
+        "test": [
+            "Listfic\\Installation::postInstall"
+        ],
+        "post-install-cmd": [
+            "Listfic\\Installation::postInstall"
+        ],
+        "post-uninstall-cmd": [
+            "Listfic\\Installation::postUninstall"
+        ]
     }
 }
