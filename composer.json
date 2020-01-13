@@ -25,7 +25,13 @@
         "post-install-cmd": [
             "Listfic\\Installation::postInstall"
         ],
-        "post-uninstall-cmd": [
+        "pre-uninstall-cmd": [
+            "Listfic\\Installation::postUninstall"
+        ],
+        "post-package-install": [
+            "Listfic\\Installation::postInstall"
+        ],
+        "pre-package-uninstall": [
             "Listfic\\Installation::postUninstall"
         ]
     }

@@ -7,16 +7,19 @@ use Composer\Installer\PackageEvent;
 class Installation {
 	static public function postInstall(Event $event) {
 		$root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
-		file_put_contents("installe", __DIR__."/test1.txt");
-		file_put_contents("installe2",$root);
+		file_put_contents(__DIR__."/test1.txt", "installe");
+		file_put_contents("ici.txt", $root);
+		file_put_contents("/tessst.txt", $root);
 		echo realpath(".");
-		copy(__DIR__.'/../../config-example.php', "$root/config/listfic.php");
+		return realpath("..");
+//		copy(__DIR__.'/../../config-example.php', "$root/config/listfic.php");
 	}
 	static public function postUninstall(Event $event) {
 		$root = dirname($event->getComposer()->getConfig()->get('vendor-dir'));
-		file_put_contents("desinstalle", __DIR__."/test3.txt");
-		file_put_contents("desinstalle2",$root);
+		file_put_contents(__DIR__."/test3.txt", "desinstalle encore");
+		file_put_contents("desinstalle.txt", $root);
 		echo realpath(".");
-		inlink(__DIR__.'/../../config-example.php');
+		return realpath("..");
+//		inlink(__DIR__.'/../../config-example.php');
 	}
 }
