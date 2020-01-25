@@ -24,7 +24,7 @@ class Directory {
 		'directives' => null,
 		'source' => null,
 		'visible' => null,
-		'files' => null,
+		'initial' => null,
 		'solution' => null,
 	];
 	public $listfic = null;
@@ -55,7 +55,7 @@ class Directory {
 		$this->updated_at = filemtime($directory);
 		$this->_path = $path;
 		$this->_name = basename($path);
-		$this->_url = $this->path2url($path);
+		$this->_url = $this->path2url($path."/");
 		$this->ini_get();
 		$this->ini_put();
 	}
@@ -123,7 +123,7 @@ class Directory {
 	}
 	public function url($file = null) {
 		$result = $this->_url;
-		$test = $this->listfic->relative_domain($this->_path);
+		$this->listfic->relative_domain($this->_path);
 		if (!is_null($file)) {
 			$result .= "/$file";
 		}
@@ -334,12 +334,15 @@ class Directory {
 		return $path;
 	}
 	public function path2url($path) {
-		$result = ($_SERVER['HTTP_HOST'] === "HTTP/1.1"?"http:/":"https:/").$_SERVER['HTTP_HOST'];
+		// var_dump($_SERVER);
+		// exit;
+		$result = ($_SERVER['SERVER_PROTOCOL'] === "HTTP/1.1"?"http://":"https://");
+		$result .= $_SERVER['HTTP_HOST'];
 		$path = str_replace($_SERVER['DOCUMENT_ROOT'], "", $path);
 		$path = str_replace("\\", "/", $path);
 
-		if ($path && $path[0] !== "/") {
-			$result .= "/";
+		if (!$path || $path[0] !== "/") {
+			$path = "/".$path;
 		}
 		$result .= $path;
 		return $result;

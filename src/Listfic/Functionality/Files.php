@@ -8,10 +8,10 @@ class Files extends Functionality {
 	public $fieldName = "files";
 	public $label = "Files";
 	public $description = 'Booléen. Y a-t-il des files à télécharger?';
-	public $suffix = 'initial';
+	public $suffix = 'files';
 	public $_pathZip = '';
 	protected $_value = false;
-	private $choices = [
+	protected $choices = [
 		'Disponible'=>'true',
 		'Non disponible'=>'false',
 	];
@@ -20,28 +20,46 @@ class Files extends Functionality {
 		$this->ZipTrait__construct();
 	}
 	static public function admin_process() {
-		//Rendre les files de départ visibles
-		if (!isset($_GET['f'])) {
+		if (!isset($_GET[$this->fieldName])) {
 			return false;
 		}
-		$result = '';
-		foreach($_GET['f'] as $directory=>$status) {
+		$result = self::admin_activate($_GET[$this->fieldName]);
+		$result = array_map(function($directory) {
+			return $directory->html_projectLine(true);
+		}, $result);
+		return implode("", $result);
+	}
+	static protected function admin_activate($projects, $forcedState=null) {
+		$result = [];
+		foreach($projects as $directory=>$status) {
 			$directoryObject = new Directory($directory);
-			$directoryObject->files = ($status === 'true');
-			$directoryObject->ini_put(true);
-			$result .= $directoryObject->html_projectLine(true);
+			if (is_null($forcedState)) {
+				$directoryObject->activate($status);
+			} else {
+				$directoryObject->activate($forcedState);
+			}
+			$result[] = $directoryObject;
 		}
 		return $result;
 	}
-
-	public function html_button(){
-		$data = 'f['.urlencode($this->directory->url()).']';
-		if ($this->value) {
-			$result = '<a class="files toggle on" href="?admin&'.$data.'=false">F</a>';
-		} else if (file_exists($this->path())) {
-			$result = '<a class="files toggle off" href="?admin&'.$data.'=true">F</a>';
+	protected function activate($state=null) {
+		$result = [];
+		if (is_null($state) || $state === "") {
+			$this->_value = !$this->_value;
 		} else {
-			$result = '<a class="files toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
+			$this->_value = ($state === 'true' || $state === true);
+		}
+		$this->ini_put(true);
+		return $this->_value;
+	}
+	public function html_button(){
+		$data = $this->fieldName.'['.urlencode($this->directory->url()).']';
+		if ($this->value) {
+			$result = '<a class="'.$this->fieldName.' toggle on" href="?admin&'.$data.'=false">F</a>';
+		} else if (file_exists($this->path())) {
+			$result = '<a class="'.$this->fieldName.' toggle off" href="?admin&'.$data.'=true">F</a>';
+		} else {
+			$result = '<a class="'.$this->fieldName.' toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
 		}
 		return $result;
 	}
@@ -83,13 +101,44 @@ class Files extends Functionality {
 		return [];
 	}
 	public function html_form() {
-		$champ = $this->html_select($this->choices);
-		return $this->html_form_line($champ);
+		$result = $this->html_select($this->choices);
+		$result = $this->html_form_line($result);
+		return $result;
 	}
 	public function ini_get($ini){
 		parent::ini_get($ini);
 		if ($this->value === true) {
 			$this->value = $this->adjustZip();
 		}
+	}
+	public function toArray() {
+		$result = [];
+		if ($this->value) {
+			$result[$this->fieldName] = [
+				'url_folder' => $this->folderUrl,
+				'url_archive' => $this->zipUrl,
+			];
+		} else {
+			$result[$this->fieldName] = false;
+		}
+		return $result;
+	}
+	/**
+	 * Retourne le chemin absolu du sous-directory de initial ou de solution (ou autre);
+	 * @param  string [$suffix=""] Le suffix vers le directory
+	 * @return string Un chemin absolu vers le sous-directory
+	 */
+	public function path() {
+		// Allowed patterns : suffixe || namesuffixe
+		$suffix = $this->suffix;
+		$result = $this->directory->path($suffix);
+		if (file_exists($result)) {
+			return $result;
+		}
+		$result = $this->directory->path($this->directory->name . $suffix);
+		if (file_exists($result)) {
+			return $result;
+		}
+		return "";
 	}
 }

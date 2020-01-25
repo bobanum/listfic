@@ -1,6 +1,5 @@
 <?php
 namespace Listfic\Functionality;
-// use Listfic\Directory;
 use ZipArchive;
 trait ZipTrait {
 	public $path_zip = ".";
@@ -250,17 +249,5 @@ trait ZipTrait {
 			return false;
 		}
 		return true;
-	}
-	public function toArray() {
-		$result = [];
-		if ($this->value) {
-			$result[$this->fieldName] = [
-				'url_folder' => $this->folderUrl,
-				'url_archive' => $this->zipUrl,
-			];
-		} else {
-			$result[$this->fieldName] = false;
-		}
-		return $result;
 	}
 }

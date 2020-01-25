@@ -13,7 +13,7 @@ class Listfic {
 	use \Listfic\Listfic_Html;
 	public $domain = "";
 	private $path = "";
-	private $directories = [];
+	public $directories = [];
 	private $arbo = [];
 	private $admin = false;
 	private $ajaxMode = true;
