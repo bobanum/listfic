@@ -1,5 +1,7 @@
 <?php
 namespace Listfic;
+include_once "functions.php";
+
 spl_autoload_register(function ($name) {
 	$name = str_replace("\\", "/", $name);
 	$name = realpath(__DIR__."/{$name}.php");

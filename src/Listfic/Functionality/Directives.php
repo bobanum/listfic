@@ -2,8 +2,6 @@
 namespace Listfic\Functionality;
 class Directives extends Functionality {
 	public $fieldName = "directives";
-	public $label = "Directives";
-	public $description = 'Directives...';
 	public $filenames = ["directives", "consignes", "instructions", "readme"];
 	public $extensions = ["htm", "html", "php", "md"];
 	protected $_value = "";

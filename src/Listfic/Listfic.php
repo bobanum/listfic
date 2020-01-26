@@ -11,6 +11,8 @@ error_reporting(E_ALL);
 use Listfic\Directory;
 class Listfic {
 	use \Listfic\Listfic_Html;
+	static protected $config;
+	static protected $strings;
 	public $domain = "";
 	private $path = "";
 	public $directories = [];
@@ -19,20 +21,22 @@ class Listfic {
 	private $ajaxMode = true;
 	private $page = "";
 	private $ini = [];
-	private $catbase = [
-		"examples" => "Exemples",
-		"exercices" => "Exercices",
-		"homeworks" => "Travaux",
-	];	//TODO Localize
-	public $exclusions = [
-		'^_',
-		'_$',
-		'^\.',
-		'theophile',
-		'nbproject',
-		'fontes',
-		'images',
-	];	//TODO Put in config file
+	private $catbase = [];
+	// private $catbase = [
+	// 	"examples",
+	// 	"exercices",
+	// 	"homeworks",
+	// ];	//TODO Localize
+	public $exclusions = [];
+	// public $exclusions = [
+	// 	'^_',
+	// 	'_$',
+	// 	'^\.',
+	// 	'theophile',
+	// 	'nbproject',
+	// 	'fontes',
+	// 	'images',
+	// ];	//TODO Put in config file
 	public function __construct($domain=".") {
 		$this->page = basename($_SERVER['PHP_SELF']);
 		$this->url = dirname($this->path2url($_SERVER['SCRIPT_FILENAME']));
@@ -42,6 +46,33 @@ class Listfic {
 
 		$this->getDirectories();
 		// $this->arbo = /* $this->arbo_sort */($this->arbo_create());
+	}
+	static public function config($name="") {
+		$names = (is_array($name)) ? $name : explode("/", $name);
+		$cfg = self::$config;
+		$key = array_pop($names);
+		while(count($names)) {
+			if (!isset($cfg[$names[0]])) {
+				throw new Exception("Configuration not found");	//TODO reformulate
+			}
+			$cfg = $cfg[0];
+			array_shift($names);
+		}
+		if (func_num_args() === 1) {
+			return $cfg[$key];
+		} else {
+			$cfg[$key] = func_get_arg(1);
+		}
+	}
+	static public function init() {
+		self::$config = include __DIR__."/../config.php";
+		if (file_exists(self::config('user-config'))) {	//TODO Normalize
+			self::$config = array_replace_recursive(self::$config, include self::config('user-config'));
+		}
+		self::$strings = array_replace_recursive(
+			include __DIR__.'/../../lang/en.php', 
+			include __DIR__.'/../../lang/'.self::config('lang').'.php'
+		);
 	}
 	/**
 	 * Retourne true si l'e nom de directory envoyé n'ect pas exclu'usager est administrateur
@@ -67,8 +98,11 @@ class Listfic {
 	 */
 	public function isExcluded($name) {
 		$name = basename($name);
-		$exclusion = implode('|', $this->exclusions);
-		if (preg_match("#$exclusion#", $name)) {
+		$exclusions = implode('|', array_filter($this->config('exclusions')));
+		if (!$exclusions) {
+			return false;
+		}
+		if (preg_match("#$exclusions#", $name)) {
 			return true;
 		} else {
 			return false;
@@ -397,4 +431,28 @@ class Listfic {
 			header("location:".$this->page."?admin"); exit;
 		}
 	}
+	static public function string($name, $default="") {
+		$names = (is_array($name)) ? $name : explode("/", $name);
+		$strings = self::$strings;
+		while(count($names)) {
+			$key = $names[0];
+			if (!isset($strings[$key])) {
+				return ($default) ? $default : implode("/", $names);
+			}
+			$strings = $strings[$key];
+			array_shift($names);
+		}
+	
+		if (!$strings) {
+			$string = $default;
+		}
+		if (is_scalar($strings)) {
+			return $strings;
+		}
+		if (isset($strings["_"])) {
+			return $strings["_"];
+		}
+		return $default;
+	}
 }
+Listfic::init();

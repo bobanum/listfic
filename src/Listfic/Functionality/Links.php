@@ -2,8 +2,6 @@
 namespace Listfic\Functionality;
 class Links extends Functionality {
 	public $fieldName = "links";
-	public $label = "Liens";
-	public $description = 'Un tableau de links (étiquette=>url) ou une série de lines (étiquette=url)';
 	public function ini_get($ini){
 		parent::ini_get($ini);
 		if (!is_array($this->value)) {

@@ -2,9 +2,7 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Visible extends Functionality {
-	public $fieldName = "visible";
-	public $label = "Visible";
-	public $description = 'Booléen. Le directory est-il visible dans la liste? Il reste tout de même accessible.';
+	public $fieldName = "visiblity";
 	protected $_value = false;
 	private $choices = [
 		'Visible'=>'true',
@@ -12,12 +10,11 @@ class Visible extends Functionality {
 	];
 	static public function admin_process() {
 		//Rendre le projet visible
-		if (!isset($_GET['v'])) {
+		if (!isset($_GET[$this->fieldName])) {
 			return false;
 		}
 		$result = '';
-		foreach($_GET['v'] as $directory=>$etat) {
-			//$directory = $this->domaine."/".$directory;
+		foreach($_GET[$this->fieldName] as $directory=>$etat) {
 			$directoryObject = new Directory($directory);
 			if ($etat === 'true') {
 				$directoryObject->visible = true;
@@ -30,11 +27,11 @@ class Visible extends Functionality {
 		return $result;
 	}
 	public function html_button(){
-		$data = 'v['.urlencode($this->directory->url()).']';
+		$data = $this->fieldName.'['.urlencode($this->directory->url()).']';
 		if ($this->directory->visible) {
-			$result = '<a class="visibilite toggle on" href="?admin&'.$data.'=false">V</a>';
+			$result = '<a class="'.$this->fieldName.' toggle on" href="?admin&'.$data.'=false">V</a>';
 		} else {
-			$result = '<a class="visibilite toggle off" href="?admin&'.$data.'=true">V</a>';
+			$result = '<a class="'.$this->fieldName.' toggle off" href="?admin&'.$data.'=true">V</a>';
 		}
 		return $result;
 	}

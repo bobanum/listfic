@@ -3,8 +3,6 @@ namespace Listfic\Functionality;
 use Listfic\Directory;
 class Ini extends Functionality {
 	public $fieldName = "";
-	public $label = "Fichier INI";
-	public $description = 'Le fichier ini au complet';
 	
 	public function html_form(){
 		return "html_form";

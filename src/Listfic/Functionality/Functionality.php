@@ -2,18 +2,21 @@
 namespace Listfic\Functionality;
 
 use Exception;
+// use function Listfic\s;
 
 class Functionality {
 	protected $fieldName = "functionality";
 	protected $label = "Functionality";
-	protected $dataType = "string";
 	protected $description = "La description de la Functionality";
+	protected $dataType = "string";
 
 	protected $directory = null;
 	protected $_value = null;
 
 	public function __construct($directory, $ini = []) {
 		$this->directory = $directory;
+		$this->label = s($this->fieldName);
+		$this->description = s("{$this->fieldName}/description");
 		$this->ini_get($ini);
 	}
 	public function __get($name) {

@@ -2,8 +2,6 @@
 namespace Listfic\Functionality;
 class Description extends Functionality {
 	public $fieldName = "description";
-	public $label = "Description";
-	public $description = 'Une description plus ou moins longue du projet';
 	public function html() {
 		$description = preg_split('#\r\n|\n\r|\n|\r#', $this->value);
 		$description = array_reduce($description, function(&$r, $i) {

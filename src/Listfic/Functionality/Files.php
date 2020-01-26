@@ -6,8 +6,6 @@ class Files extends Functionality {
 		__construct as private ZipTrait__construct;
 	}
 	public $fieldName = "files";
-	public $label = "Files";
-	public $description = 'Booléen. Y a-t-il des files à télécharger?';
 	public $suffix = 'files';
 	public $_pathZip = '';
 	protected $_value = false;
