@@ -1,7 +1,7 @@
 <?php
 namespace Listfic\Functionality;
 class Title extends Functionality {
-	public $fieldName = "title";
+	static protected $fieldName = 'title';
 	private $patterns = [
 		"<title.*>(.*)</title.*>",
 		"<h1.*>(.*)</h1.*>",

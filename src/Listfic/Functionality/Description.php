@@ -1,7 +1,7 @@
 <?php
 namespace Listfic\Functionality;
 class Description extends Functionality {
-	public $fieldName = "description";
+	static protected $fieldName = "description";
 	public function html() {
 		$description = preg_split('#\r\n|\n\r|\n|\r#', $this->value);
 		$description = array_reduce($description, function(&$r, $i) {
@@ -11,7 +11,7 @@ class Description extends Functionality {
 		return '<div class="description">'.$description.'</div>';
 	}
 	public function html_form() {
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		$champ = '';
 		$champ .= '<textarea name="'.$fieldName.'" id="'.$fieldName.'" cols="60" rows="7" style="vertical-align:top;">';
 		$champ .= $this->value;

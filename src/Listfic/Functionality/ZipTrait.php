@@ -2,18 +2,12 @@
 namespace Listfic\Functionality;
 use ZipArchive;
 trait ZipTrait {
-	public $path_zip = ".";
+	public $path_zip = null; // null = Zips on the fly
 	/** @var string - Tableau des regexp des files/directories à ne pas inclure dans le ZIP. La clé n'est pas utilisée, mais représente la fonction du pattern. */
 	public $zipExclusions = [
 		/*'underscoreStart'=>'^_', */
 		'underscoreEnd'=>'_$', 
 		'dotStart'=>'^\.',
-	];
-	public $patterns = [
-		'zippedFolder' => '{#name}_{#suffix}',
-		'zipFilename' => '{#zippedFolder}.zip',
-		'zipPath' => '{#archiveFolder}/{#zipFilename}',
-		'folderPath'=> '{#root}/_{#suffix}',
 	];
 
 	public function __construct() {
@@ -30,30 +24,6 @@ trait ZipTrait {
 		}
 		return realpath("{$this->root}/{$path_zip}");
 	}
-	public function get_root() {
-		return $this->directory->path();
-	}
-	public function get_folderPath() {
-		return $this->eval($this->patterns['folderPath']);
-	}
-	public function get_zipPath() {
-		return $this->eval($this->patterns['zipPath']);
-	}
-	public function get_folderUrl() {
-		return $this->directory->path2url($this->folderPath);
-	}
-	public function get_zipUrl() {
-		return $this->directory->path2url($this->zipPath);
-	}
-	public function get_zipFilename() {
-		return $this->eval($this->patterns['zipFilename']);
-	}
-	public function get_zippedFolder() {
-		return $this->eval($this->patterns['zippedFolder']);
-	}
-	public function get_name() {
-		return $this->directory->name;
-	}
 	/**
 	 * Zippe un sous-directory en lui donnant le même nom
 	 * @param type $path Chemin absolu vers le directory à zipper
@@ -64,7 +34,7 @@ trait ZipTrait {
 		$this->adjustDirectory(dirname($zipPath));
 		// $path = realpath($folderPath);
 		$element = basename($folderPath);
-		$zip = new ZipArchive;
+		$zip = new ZipArchive();
 		$res = $zip->open($zipPath, ZipArchive::CREATE);
 		if ($res === TRUE) {
 			$this->zip_add($zip, $folderPath, $this->zippedFolder);
@@ -129,7 +99,7 @@ trait ZipTrait {
 	 * @return boolean
 	 */
 	public function adjustZip() {
-		$suffix = $this->suffix;
+		$suffix = self::suffix;
 		$folderPath = $this->folderPath;
 		$zipPath = $this->zipPath;
 		if (!file_exists($zipPath) && !file_exists($folderPath)) {
@@ -153,7 +123,7 @@ trait ZipTrait {
 
 	public function eval($pattern) {
 		$pattern = str_replace("{#", '{$this->', $pattern);
-		$result = eval("return \"$pattern\";");
+		$result = eval("return \"{$pattern}\";");
 		return $result;
 	}
 

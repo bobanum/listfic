@@ -1,7 +1,7 @@
 <?php
 namespace Listfic\Functionality;
 class Directives extends Functionality {
-	public $fieldName = "directives";
+	static protected $fieldName = "directives";
 	public $filenames = ["directives", "consignes", "instructions", "readme"];
 	public $extensions = ["htm", "html", "php", "md"];
 	protected $_value = "";
@@ -15,7 +15,7 @@ class Directives extends Functionality {
 				$path = $this->directory->path($file);
 				$url = $this->directory->url($file);
 				if (file_exists($path)) {
-					return [$this->fieldName => '<a href="'.$url.'" class="'.$this->fieldName.'" title="'.$this->label.'"></a>'];
+					return [self::$fieldName => '<a href="'.$url.'" class="'.self::$fieldName.'" title="'.$this->label.'"></a>'];
 				}
 			}
 		}

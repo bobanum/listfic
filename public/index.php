@@ -1,9 +1,10 @@
 <?php
 error_reporting(E_ALL);
 include_once "../src/autoload.php";
-
+Listfic\Listfic::process();
 $x = new Listfic\Listfic("projets");
-var_dump($x->toArray());
+// var_dump($x->directories[5]);
+var_dump($x->directories[5]->toArray());
 ?>
 <!DOCTYPE html>
 <html lang="fr">

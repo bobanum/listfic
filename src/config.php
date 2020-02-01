@@ -22,7 +22,9 @@ return [
 		'directives' => [],
 		'source' => [],
 		'visible' => [],
-		'initial' => [],
+		'initial' => [
+			'suffix' => 'depart',
+		],
 		'solution' => [],
 	],
 ];

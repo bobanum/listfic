@@ -260,7 +260,7 @@ class Directory {
 		$ini = implode("\r\n", $ini);
 
 		$result[] = "<?php";
-		$result[] = "// Project : ".$this->url()." ";
+		$result[] = "// ".s("project")." : ".$this->url()." ";
 		$result[] = "\$ini = [";
 		$result[] = $ini;
 		$result[] = "];";

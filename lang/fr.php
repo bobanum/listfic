@@ -5,6 +5,7 @@ return [
 	'homeworks' => 'Travaux',
 	'visible' => 'Visible',
 	'hidden' => 'Caché',
+	'project' => 'Projet',
 	'category' => [
 		'_' => 'Catégorie',
 		'description' => 'Catégories sous forme "Catégorie/Sous-Catégorie/..."',

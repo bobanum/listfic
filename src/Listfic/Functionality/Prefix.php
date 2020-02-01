@@ -1,6 +1,6 @@
 <?php
 namespace Listfic\Functionality;
 class Prefix extends Functionality {
-	public $fieldName = "prefix";
+	static protected $fieldName = 'prefix';
 	protected $_value = "";
 }

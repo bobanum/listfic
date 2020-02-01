@@ -454,5 +454,12 @@ class Listfic {
 		}
 		return $default;
 	}
+	static public function process() {
+		$functionalities = self::config("functionalities");
+		foreach($functionalities as $name => $object) {
+			$class = "\\Listfic\\Functionality\\" . ucfirst($name);
+			$class::process();
+		}
+	}
 }
 Listfic::init();

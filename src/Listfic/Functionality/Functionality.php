@@ -5,7 +5,7 @@ use Exception;
 // use function Listfic\s;
 
 class Functionality {
-	protected $fieldName = "functionality";
+	static protected $fieldName = "functionality";
 	protected $label = "Functionality";
 	protected $description = "La description de la Functionality";
 	protected $dataType = "string";
@@ -15,8 +15,8 @@ class Functionality {
 
 	public function __construct($directory, $ini = []) {
 		$this->directory = $directory;
-		$this->label = s($this->fieldName);
-		$this->description = s("{$this->fieldName}/description");
+		$this->label = s(self::$fieldName);
+		$this->description = s(self::$fieldName."/description");
 		$this->ini_get($ini);
 	}
 	public function __get($name) {
@@ -24,7 +24,7 @@ class Functionality {
 		if (method_exists($this, $get_name)) {
 			return $this->$get_name();
 		}
-		throw new Exception("Undefined property '$name");
+		throw new Exception("Undefined property '$name'");
 	}
 	public function __set($name, $val) {
 		$set_name = "set_$name";
@@ -44,7 +44,7 @@ class Functionality {
 	}
 	public function toArray() {
 		$result = [];
-		$result[$this->fieldName] = $this->value;
+		$result[self::$fieldName] = $this->value;
 		return $result;
 	}
 	public function html_button(){
@@ -54,7 +54,7 @@ class Functionality {
 		return '<div>'.$this->value.'</div>';
 	}
 	public function ini_get($ini){
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		if (!$fieldName) {
 			return;
 		}
@@ -72,13 +72,13 @@ class Functionality {
 		return $this->value;
 	}
 	public function ini_create() {
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		if (!$fieldName) {
 			return;
 		}
 		$result = '';
 		$result .= "\t//".$this->description."\r\n";
-		$result .= "\t'".$this->fieldName."'";
+		$result .= "\t'".self::$fieldName."'";
 		$result .= " => ".var_export($this->value, true).",\r\n";
 		return $result;
 	}
@@ -86,13 +86,13 @@ class Functionality {
 		return "admin";
 	}
 	protected function html_form() {
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		$result = '<input type="text" name="'.$fieldName.'" id="'.$fieldName.'" value="'.$this->value.'" size="38" />';
 		$result = static::html_form_line($result);
 		return $result;
 	}
 	protected function html_form_line($field){
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		$result = '';
 		$result .= '<div class="'.$fieldName.'">';
 		$result .= '<label for="'.$fieldName.'">'.$this->label.'</label>';
@@ -102,7 +102,7 @@ class Functionality {
 		return $result;
 	}
 	protected function html_select($choices=[]){
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		$result = '';
 		$result .= '<select name="'.$fieldName.'" id="'.$fieldName.'">';
 		$current = $this->value;
@@ -115,6 +115,8 @@ class Functionality {
 		}
 		$result .= '</select>';
 		return $result;
+	}
+	static public function process() {
 	}
 }
 

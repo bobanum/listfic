@@ -1,5 +1,5 @@
 <?php
 namespace Listfic\Functionality;
 class CreatedDate extends Functionality {
-	public $fieldName = "createdDate";
+	static protected $fieldName = 'createdDate';
 }

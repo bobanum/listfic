@@ -2,6 +2,6 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Solution extends Files {
-	public $fieldName = "solution";
-	public $suffix = 'solution';
+	static protected $fieldName = 'solution';
+	static protected $suffix = 'solution';
 }

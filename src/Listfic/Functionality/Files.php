@@ -5,9 +5,10 @@ class Files extends Functionality {
 	use ZipTrait {
 		__construct as private ZipTrait__construct;
 	}
-	public $fieldName = "files";
-	public $suffix = 'files';
-	public $_pathZip = '';
+	static protected $fieldName = 'files';
+	static protected $separator = '_';
+	static protected $suffix = 'files';
+	static public $_pathZip = '';
 	protected $_value = false;
 	protected $choices = [
 		'Disponible'=>'true',
@@ -18,10 +19,10 @@ class Files extends Functionality {
 		$this->ZipTrait__construct();
 	}
 	static public function admin_process() {
-		if (!isset($_GET[$this->fieldName])) {
+		if (!isset($_GET[static::$fieldName])) {
 			return false;
 		}
-		$result = self::admin_activate($_GET[$this->fieldName]);
+		$result = static::admin_activate($_GET[static::$fieldName]);
 		$result = array_map(function($directory) {
 			return $directory->html_projectLine(true);
 		}, $result);
@@ -51,13 +52,13 @@ class Files extends Functionality {
 		return $this->_value;
 	}
 	public function html_button(){
-		$data = $this->fieldName.'['.urlencode($this->directory->url()).']';
+		$data = static::$fieldName.'['.urlencode($this->directory->url()).']';
 		if ($this->value) {
-			$result = '<a class="'.$this->fieldName.' toggle on" href="?admin&'.$data.'=false">F</a>';
+			$result = '<a class="'.static::$fieldName.' toggle on" href="?admin&'.$data.'=false">F</a>';
 		} else if (file_exists($this->path())) {
-			$result = '<a class="'.$this->fieldName.' toggle off" href="?admin&'.$data.'=true">F</a>';
+			$result = '<a class="'.static::$fieldName.' toggle off" href="?admin&'.$data.'=true">F</a>';
 		} else {
-			$result = '<a class="'.$this->fieldName.' toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
+			$result = '<a class="'.static::$fieldName.' toggle off" href="?admin&'.$data.'=true">&nbsp;</a>';
 		}
 		return $result;
 	}
@@ -78,7 +79,7 @@ class Files extends Functionality {
 		if ($condition === false) {
 			return $result;
 		}
-		$result[$this->fieldName] = $this->directory->link_download($label, ["files", $this->directory->url()], 'files');
+		$result[static::$fieldName] = $this->directory->link_download($label, ["files", $this->directory->url()], 'files');
 		if ($condition === true) {
 			return $result;
 		}
@@ -94,7 +95,7 @@ class Files extends Functionality {
 		$path = $this->directory->path($condition);
 		$url = $this->directory->url($condition);
 		if (file_exists($path)) {
-			return [$this->fieldName => '<a href="'.$url.'">'.$label.'</a>'];
+			return [static::$fieldName => '<a href="'.$url.'">'.$label.'</a>'];
 		}
 		return [];
 	}
@@ -110,33 +111,48 @@ class Files extends Functionality {
 		}
 	}
 	public function toArray() {
-		$result = [];
-		if ($this->value) {
-			$result[$this->fieldName] = [
-				'url_folder' => $this->folderUrl,
-				'url_archive' => $this->zipUrl,
-			];
-		} else {
-			$result[$this->fieldName] = false;
-		}
-		return $result;
+		$result = [
+			'visible' => $this->value,
+			'has_folder' => file_exists($this->path),
+			'url_folder' => $this->url,
+			'has_archive' => file_exists($this->zipPath),
+			'url_archive' => $this->zipUrl,
+		];
+		return [static::$fieldName => $result];
+	}
+	public function get_root() {
+		return $this->directory->path();
+	}
+	public function get_name() {
+		return $this->directory->name;
 	}
 	/**
 	 * Retourne le chemin absolu du sous-directory de initial ou de solution (ou autre);
 	 * @param  string [$suffix=""] Le suffix vers le directory
 	 * @return string Un chemin absolu vers le sous-directory
 	 */
-	public function path() {
-		// Allowed patterns : suffixe || namesuffixe
-		$suffix = $this->suffix;
-		$result = $this->directory->path($suffix);
-		if (file_exists($result)) {
-			return $result;
-		}
-		$result = $this->directory->path($this->directory->name . $suffix);
-		if (file_exists($result)) {
-			return $result;
-		}
-		return "";
+	public function get_path() {
+		$result = $this->root.'/'.static::$separator.static::$suffix;
+		return $result;
+	}
+	public function get_url() {
+		var_dump($this->path);
+		return $this->directory->path2url($this->path);
+	}
+	public function get_zipPath() {
+		return $this->archiveFolder.'/'.$this->zipFilename;
+	}
+	public function get_zipUrl() {
+		$result = dirname(dirname($this->root)).'/'.static::$suffix.'/'.$this->name;
+		return $this->directory->path2url($result);
+	}
+	public function get_zipFilename() {
+		return $this->zippedFolder.'.zip';
+	}
+	public function get_zippedFolder() {
+		return $this->name.static::$separator.static::$suffix;
+	}
+	static public function process() {
+		var_dump(preg_match('#^/'.static::$suffix.'/([a-zA-Z0-9]+)/?(.*)$#', $_SERVER['PATH_INFO'] === '/solution/cal'));
 	}
 }

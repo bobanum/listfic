@@ -2,7 +2,7 @@
 namespace Listfic\Functionality;
 use Listfic\Directory;
 class Ini extends Functionality {
-	public $fieldName = "";
+	static protected $fieldName = '';
 	
 	public function html_form(){
 		return "html_form";

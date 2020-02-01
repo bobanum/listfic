@@ -1,7 +1,7 @@
 <?php
 namespace Listfic\Functionality;
 class Source extends Functionality {
-	public $fieldName = "source";
+	static protected $fieldName = 'source';
 	protected $_value = false;
 	private $choices = [
 		'Visible'=>'true',

@@ -1,7 +1,7 @@
 <?php
 namespace Listfic\Functionality;
 class Links extends Functionality {
-	public $fieldName = "links";
+	static protected $fieldName = 'links';
 	public function ini_get($ini){
 		parent::ini_get($ini);
 		if (!is_array($this->value)) {
@@ -21,7 +21,7 @@ class Links extends Functionality {
 		return $this->value;
 	}
 	public function html_form() {
-		$fieldName = $this->fieldName;
+		$fieldName = self::$fieldName;
 		$val = [];
 		foreach ($this->value as $label=>$url) {
 			$val[] = $label."=".$url;

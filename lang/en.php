@@ -5,6 +5,7 @@ return [
 	'examples' => 'Examples',
 	'exercices' => 'Exercices',
 	'homeworks' => 'HomeWorks',
+	'project' => 'Project',
 	'category' => [
 		'_' => 'Category',
 		'description' => 'Categories formatted as "Category/SubCategory/..."',

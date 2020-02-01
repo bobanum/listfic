@@ -11,7 +11,9 @@ return [
 		'source' => [],
 		'visible' => [],
 		'initial' => [],
-		'solution' => [],
+		'solution' => [
+			'suffix' => 'reponse'
+		],
 	],
 	'exclusions' => [
 		'theophile_dir' => 'theophile',
