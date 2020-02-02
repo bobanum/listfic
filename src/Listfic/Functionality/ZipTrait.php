@@ -28,18 +28,22 @@ trait ZipTrait {
 	 * Zippe un sous-directory en lui donnant le même nom
 	 * @param type $path Chemin absolu vers le directory à zipper
 	 */
-	public function zip() {
-		$folderPath = $this->folderPath;
-		$zipPath = $this->zipPath;
-		$this->adjustDirectory(dirname($zipPath));
-		// $path = realpath($folderPath);
-		$element = basename($folderPath);
+	public function zip($zipPath=null) {
+		if (is_null($zipPath)) {
+			$zipPath = $this->zipPath;
+			$this->adjustDirectory(dirname($zipPath));
+		}
+		if (is_null($zipPath)) {
+			$zipPath = tempnam();
+		}
+		$path = $this->path;
+		$element = basename($path);
 		$zip = new ZipArchive();
 		$res = $zip->open($zipPath, ZipArchive::CREATE);
 		if ($res === TRUE) {
-			$this->zip_add($zip, $folderPath, $this->zippedFolder);
+			$this->zip_add($zip, $path, $this->zippedFolder);
 		}
-		return $this;
+		return $zipPath;
 	}
 	/**
 	 * Ajoute un fichier ou un directory à un zip
@@ -99,17 +103,17 @@ trait ZipTrait {
 	 * @return boolean
 	 */
 	public function adjustZip() {
-		$suffix = self::suffix;
-		$folderPath = $this->folderPath;
+		$suffix = self::$suffix;
+		$path = $this->path;
 		$zipPath = $this->zipPath;
-		if (!file_exists($zipPath) && !file_exists($folderPath)) {
+		if (!file_exists($zipPath) && !file_exists($path)) {
 			return false;
 		}
 		if (!file_exists($zipPath)) {
 			$this->zip();
 			return true;
 		}
-		if (!file_exists($folderPath)) {
+		if (!file_exists($path)) {
 			return true;
 		}
 		//s'il n'y a pas de ini_fichiers, on vérifie s'il y a un directory du meme nom ou un zip

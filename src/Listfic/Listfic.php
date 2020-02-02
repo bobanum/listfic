@@ -13,7 +13,9 @@ class Listfic {
 	use \Listfic\Listfic_Html;
 	static protected $config;
 	static protected $strings;
-	public $domain = "";
+	static protected $catbase = [];
+	static protected $exclusions = [];
+	static protected $domain = "";
 	private $path = "";
 	public $directories = [];
 	private $arbo = [];
@@ -21,28 +23,12 @@ class Listfic {
 	private $ajaxMode = true;
 	private $page = "";
 	private $ini = [];
-	private $catbase = [];
-	// private $catbase = [
-	// 	"examples",
-	// 	"exercices",
-	// 	"homeworks",
-	// ];	//TODO Localize
-	public $exclusions = [];
-	// public $exclusions = [
-	// 	'^_',
-	// 	'_$',
-	// 	'^\.',
-	// 	'theophile',
-	// 	'nbproject',
-	// 	'fontes',
-	// 	'images',
-	// ];	//TODO Put in config file
 	public function __construct($domain=".") {
 		$this->page = basename($_SERVER['PHP_SELF']);
 		$this->url = dirname($this->path2url($_SERVER['SCRIPT_FILENAME']));
-		$this->domain = realpath($domain);
+		$this->path_domain = realpath(static::$domain);
 		$this->path = dirname($_SERVER['SCRIPT_FILENAME']);
-		$this->url_domain = $this->path2url($this->domain);
+		$this->url_domain = $this->path2url(static::$domain);
 
 		$this->getDirectories();
 		// $this->arbo = /* $this->arbo_sort */($this->arbo_create());
@@ -68,6 +54,12 @@ class Listfic {
 		self::$config = include __DIR__."/../config.php";
 		if (file_exists(self::config('user-config'))) {	//TODO Normalize
 			self::$config = array_replace_recursive(self::$config, include self::config('user-config'));
+		}
+		foreach(self::$config as $name=>$value) {
+			if (property_exists(self::class, $name)) {
+				self::$$name = $value;
+			}
+			
 		}
 		self::$strings = array_replace_recursive(
 			include __DIR__.'/../../lang/en.php', 
@@ -127,7 +119,7 @@ class Listfic {
 	 * @return Directory[]
 	 */
 	public function getDirectories() {
-		$directories = (glob($this->domain."/*", GLOB_ONLYDIR));
+		$directories = (glob($this->path_domain."/*", GLOB_ONLYDIR));
 		foreach ($directories as $directory) {
 			$this->addDirectory($directory);
 		}
@@ -233,7 +225,7 @@ class Listfic {
 		return $path;
 	}
 	public function relative_domain($path){
-		return $this->relative($this->domain, $path);
+		return $this->relative($this->path_domain, $path);
 	}
 	public function toArray() {
 		$result = [];
@@ -355,7 +347,7 @@ class Listfic {
 		//Rendre le projet visible
 		if (!isset($_GET['v'])) return false;
 		foreach($_GET['v'] as $directory=>$etat) {
-			$directory = $this->domaine."/".$directory;
+			$directory = $this->path_domain."/".$directory;
 			$directoryObject = new Directory($directory);
 			if ($etat === 'true') $directoryObject->visible = true;
 			else $directoryObject->visible = false;
@@ -367,7 +359,7 @@ class Listfic {
 		//Rendre les files de départ visibles
 		if (!isset($_GET['f'])) return false;
 		foreach($_GET['f'] as $directory=>$etat) {
-			$directory = $this->domaine."/".$directory;
+			$directory = $this->path_domain."/".$directory;
 			$directoryObject = new Directory($directory);
 			$directoryObject->files = ($etat === 'true');
 			$directoryObject->mettreIni(true);
@@ -378,7 +370,7 @@ class Listfic {
 		//Rendre la solution visible
 		if (!isset($_GET['s'])) return false;
 		foreach($_GET['s'] as $directory=>$etat) {
-			$directory = $this->domaine."/".$directory;
+			$directory = $this->path_domain."/".$directory;
 			$directoryObject = new Directory($directory);
 			$directoryObject->solution = ($etat === 'true');
 			$directoryObject->mettreIni(true);

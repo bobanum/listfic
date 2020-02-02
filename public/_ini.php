@@ -1,11 +1,11 @@
 <?php
-// Projet : http://localhost:8000/p1/ 
+// Projet : http://localhost:8000/ 
 $ini = [
 	//functionality/description
 	'functionality' => NULL,
 
 	//functionality/description
-	'functionality' => 'WOW',
+	'functionality' => 'Document',
 
 	//functionality/description
 	'functionality' => '',

@@ -15,8 +15,8 @@ class Functionality {
 
 	public function __construct($directory, $ini = []) {
 		$this->directory = $directory;
-		$this->label = s(self::$fieldName);
-		$this->description = s(self::$fieldName."/description");
+		$this->label = s(static::$fieldName);
+		$this->description = s(static::$fieldName."/description");
 		$this->ini_get($ini);
 	}
 	public function __get($name) {
@@ -44,7 +44,7 @@ class Functionality {
 	}
 	public function toArray() {
 		$result = [];
-		$result[self::$fieldName] = $this->value;
+		$result[static::$fieldName] = $this->value;
 		return $result;
 	}
 	public function html_button(){
@@ -54,7 +54,7 @@ class Functionality {
 		return '<div>'.$this->value.'</div>';
 	}
 	public function ini_get($ini){
-		$fieldName = self::$fieldName;
+		$fieldName = static::$fieldName;
 		if (!$fieldName) {
 			return;
 		}
@@ -72,13 +72,13 @@ class Functionality {
 		return $this->value;
 	}
 	public function ini_create() {
-		$fieldName = self::$fieldName;
+		$fieldName = static::$fieldName;
 		if (!$fieldName) {
 			return;
 		}
 		$result = '';
 		$result .= "\t//".$this->description."\r\n";
-		$result .= "\t'".self::$fieldName."'";
+		$result .= "\t'".static::$fieldName."'";
 		$result .= " => ".var_export($this->value, true).",\r\n";
 		return $result;
 	}
@@ -86,13 +86,13 @@ class Functionality {
 		return "admin";
 	}
 	protected function html_form() {
-		$fieldName = self::$fieldName;
+		$fieldName = static::$fieldName;
 		$result = '<input type="text" name="'.$fieldName.'" id="'.$fieldName.'" value="'.$this->value.'" size="38" />';
 		$result = static::html_form_line($result);
 		return $result;
 	}
 	protected function html_form_line($field){
-		$fieldName = self::$fieldName;
+		$fieldName = static::$fieldName;
 		$result = '';
 		$result .= '<div class="'.$fieldName.'">';
 		$result .= '<label for="'.$fieldName.'">'.$this->label.'</label>';
@@ -102,7 +102,7 @@ class Functionality {
 		return $result;
 	}
 	protected function html_select($choices=[]){
-		$fieldName = self::$fieldName;
+		$fieldName = static::$fieldName;
 		$result = '';
 		$result .= '<select name="'.$fieldName.'" id="'.$fieldName.'">';
 		$current = $this->value;

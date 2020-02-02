@@ -8,12 +8,6 @@ class Directory {
 	use \Listfic\Directory_Html;
 	/** @var string - Le nom du petit fichier à laisser dans le directory */
 	public $iniFilename = "_ini.php";
-	//TODO Localization
-	// public $labels = [
-	// 	"files"=>"Files",
-	// 	"solution"=>"Solution",
-	// 	"directives"=>"Directives",
-	// ];
 
 	private $functionalities = [
 		'ini' => null,
@@ -38,6 +32,7 @@ class Directory {
 	private $updated_at;
 	/** @var boolean Indique si le ini est modifié pour le sauvegarder */
 	public $modified = false;
+	public $valid = true;
 	/**
 	 * Constructeur
 	 * @param type $directory - Le directory à analyser. Pour l'instant doit être la racine du site.
@@ -45,17 +40,17 @@ class Directory {
 	 */
 	public function __construct($directory, $listfic = null) {
 		$this->listfic = $listfic;
-		if (!is_dir($directory)) {
+		if (is_file($directory)) {
 			$directory = dirname($directory);
 		}
-		$path = realpath($directory);
-		if (!$path) {
-			throw new \Exception ("Directory '$directory' inexistant");
+		if (!file_exists($directory)) {
+			$this->valid = false;
+			return;
 		}
+		$this->_path = realpath($directory);
+		$this->_name = basename($this->_path);
 		$this->updated_at = filemtime($directory);
-		$this->_path = $path;
-		$this->_name = basename($path);
-		$this->_url = $this->path2url($path."/");
+		$this->_url = $this->path2url($this->_path."/");
 		$this->ini_get();
 		$this->ini_put();
 	}
@@ -114,6 +109,16 @@ class Directory {
 	public function get_name() {
 		return $this->_name;
 	}
+	public function functionality($functionality, $property=null) {
+		if (!isset($this->functionalities[$functionality])) {
+			throw new Exception("Functionality '$functionality' not found.");
+		}
+		$result = $this->functionalities[$functionality];
+		if (is_null($property)) {
+			return $result;
+		}
+		return $result->$property;
+	}
 	public function path($file = null) {
 		$result = $this->_path;
 		if (!is_null($file)) {
@@ -123,7 +128,6 @@ class Directory {
 	}
 	public function url($file = null) {
 		$result = $this->_url;
-		$this->listfic->relative_domain($this->_path);
 		if (!is_null($file)) {
 			$result .= "/$file";
 		}

@@ -1,5 +1,6 @@
 <?php
 namespace Listfic\Functionality;
+use Listfic\Listfic;
 use Listfic\Directory;
 class Files extends Functionality {
 	use ZipTrait {
@@ -105,17 +106,20 @@ class Files extends Functionality {
 		return $result;
 	}
 	public function ini_get($ini){
-		parent::ini_get($ini);
-		if ($this->value === true) {
-			$this->value = $this->adjustZip();
-		}
+		return parent::ini_get($ini);
+		// if ($this->value === true) {
+			// $this->value = $this->adjustZip();
+		// }
+	}
+	public function hasFolder() {
+		return file_exists($this->path);
 	}
 	public function toArray() {
 		$result = [
 			'visible' => $this->value,
-			'has_folder' => file_exists($this->path),
+			'has_folder' => $this->has_folder(),
 			'url_folder' => $this->url,
-			'has_archive' => file_exists($this->zipPath),
+			// 'has_archive' => file_exists($this->zipPath),
 			'url_archive' => $this->zipUrl,
 		];
 		return [static::$fieldName => $result];
@@ -136,7 +140,6 @@ class Files extends Functionality {
 		return $result;
 	}
 	public function get_url() {
-		var_dump($this->path);
 		return $this->directory->path2url($this->path);
 	}
 	public function get_zipPath() {
@@ -150,9 +153,45 @@ class Files extends Functionality {
 		return $this->zippedFolder.'.zip';
 	}
 	public function get_zippedFolder() {
-		return $this->name.static::$separator.static::$suffix;
+		return $this->name . static::$separator . static::$suffix;
 	}
+	public function get_downloadable() {
+		return $this->value && $this->hasFolder();
+	}
+	protected function sendZip() {
+		$file = $this->zip();
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/octet-stream');
+		header('Content-Disposition: attachment; filename='.$this->zipFilename);
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($file));
+
+		readfile($file);
+		exit;
+	}
+
 	static public function process() {
-		var_dump(preg_match('#^/'.static::$suffix.'/([a-zA-Z0-9]+)/?(.*)$#', $_SERVER['PATH_INFO'] === '/solution/cal'));
+		if(empty($_SERVER['PATH_INFO'])) {
+			return;
+		}
+		if (!preg_match('#/'.static::$suffix.'/([a-zA-Z0-9]+)(?:/(.*)$)?#', $_SERVER['PATH_INFO'], $res)) {
+			return;
+		}
+		$directory = new Directory(Listfic::config('domain')."/".$res[1]);		
+		if (!$directory->valid || !$directory->visible->value) {
+			header("HTTP/1.0 404 Not Found");
+			echo "Not found";
+			exit;
+		}
+		$functionality = $directory->functionality(static::$fieldName);
+		if (!$functionality->downloadable) {
+			header("HTTP/1.0 404 Not Found");
+			echo "Not found";
+			exit;
+		}
+		$functionality->sendZip();	//TODO Use data un address in name
 	}
 }
